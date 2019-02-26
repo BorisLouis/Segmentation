@@ -89,13 +89,13 @@ yRange = yRange * pxSizeXY*1e-3;
 zRange = zRange * pxSizeZ*1e-3;
 if pores
 
-    poresCoord=allDataAdapt(1).pores3D.ctr_ext;
+    poresCoord=allData(1).pores3D.ctr_ext;
     idxX = and(poresCoord(:,1)>=xRange(1),poresCoord(:,1)<=xRange(2));
     idxY = and(poresCoord(:,2)>=yRange(1),poresCoord(:,2)<=yRange(2));
     idxZ = and(poresCoord(:,3)>=zRange(1),poresCoord(:,3)<=zRange(2));
     idx = logical(idxX.*idxY.*idxZ);
     poresCoord = poresCoord(idx,:);
-    extRad=allDataAdapt(1).pores3D.extRad;
+    extRad=allData(1).pores3D.extRad;
     extRad = extRad(idx);
 
 else
