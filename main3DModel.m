@@ -39,9 +39,8 @@ colorModel = [0.6,0,0];%replace by : 'Z' for zcoloring
 colorPores = [0.4 0.8 0.8];
 
 %Select area to plot
-xRange = [1 166];%px
-yRange = [1 166];%px
-zRange = [1 76];%px
+xRange = [30 196];%px
+yRange = [30 196];%px
 
 %more parameter are available and can be checked withing the smoothpatch
 %function, the default parameter put in this implementation were satisfying
@@ -81,19 +80,17 @@ end
 
 %% Preparing data
 %from the analysis file
-data2Render = data2Render(yRange(1):yRange(2),xRange(1):xRange(2),...
-                          zRange(1):zRange(2));
+data2Render = data2Render(yRange(1):yRange(2),xRange(1):xRange(2),:);
 %convert range to um
 xRange = xRange * pxSizeXY*1e-3;
 yRange = yRange * pxSizeXY*1e-3;
-zRange = zRange * pxSizeZ*1e-3;
+
 if pores
 
     poresCoord=allData(1).pores3D.ctr_ext;
     idxX = and(poresCoord(:,1)>=xRange(1),poresCoord(:,1)<=xRange(2));
     idxY = and(poresCoord(:,2)>=yRange(1),poresCoord(:,2)<=yRange(2));
-    idxZ = and(poresCoord(:,3)>=zRange(1),poresCoord(:,3)<=zRange(2));
-    idx = logical(idxX.*idxY.*idxZ);
+    idx = logical(idxX.*idxY);
     poresCoord = poresCoord(idx,:);
     extRad=allData(1).pores3D.extRad;
     extRad = extRad(idx);
@@ -102,7 +99,7 @@ else
     warning('no pores data were found so they will not be plotted');
 end
 
-
+zRange = [0 max(poresCoord(:,3))];
 %% Making isosurface
 iSurface = isosurface(data2Render,1/2);
 % smoothing using compiled c code
@@ -155,9 +152,12 @@ if pores
     nfacets = 15;
     X = poresCoord(:,1)-xRange(1);
     Y = poresCoord(:,2)-yRange(1);
-    Z = poresCoord(:,3)-zRange(1);
+    Z = poresCoord(:,3);
     S = rad;
-
+    
+    xRange = xRange-xRange(1);
+    yRange = yRange-yRange(1);
+    zRange = zRange-zRange(1);
     %-- Sphere facets
     [sx,sy,sz]= sphere(nfacets);
 
@@ -178,6 +178,8 @@ if pores
             'FaceColor',colorPores);
     end
 end
+%make axis have same size scale
+axis image;
 %save the figure
 fileName = [path filesep namenoExt 'model3D'];
 saveas(gcf,fileName);
