@@ -136,7 +136,7 @@ if an2D
             NRconn(i) = length(IDconn);
             
             % calculate position of max distance (use extRad) for plotting
-            % pores on 3D model
+            % pores 
             x = round(stats(i).BoundingBox(1));
             y = round(stats(i).BoundingBox(2));
             wx = stats(i).BoundingBox(3);
@@ -224,15 +224,20 @@ if an3D
         inRad3D(i) = max(max(max(bwdist(~stats(i,:).Image{1}))));
         vol(i) = stats(i,:).Volume;
         ctr3D(i, :) = stats(i,:).Centroid;
-        
+         %Calculate connectivity by expanding the coordinate of a pores
+            %and checking overlap with others
         [I,J,K] = ind2sub(size(IM),stats(i,:).VoxelIdxList{1});
         coord = [I-ctr3D(i,2) J-ctr3D(i,1) K-ctr3D(i,3)];
+        %Scale factor is define for each pore to get it about 2 pixel
+        %bigger than it really is (hence connecting it to other pores as if
+        %we had not performed watershed)
         scaleFactor = (abs(coord)+2)./abs(coord);
         dilCoord = coord;
         dilCoord(dilCoord(:,1)~=0,1) = coord(coord(:,1)~=0,1).*scaleFactor(coord(:,1)~=0,1);
         dilCoord(dilCoord(:,2)~=0,2) = coord(coord(:,2)~=0,2).*scaleFactor(coord(:,2)~=0,2);
         dilCoord(dilCoord(:,3)~=0,3) = coord(coord(:,3)~=0,3).*scaleFactor(coord(:,3)~=0,3);
-        
+        %Calculation based on coordinate because much faster to process
+        %than using imdilate on the full image/volume 
         dilCoord  =[dilCoord(:,1)+ctr3D(i,2) dilCoord(:,2)+ctr3D(i,1) dilCoord(:,3)+ctr3D(i,3)];
         dilCoord(dilCoord<1) = 1;
         dilCoord(dilCoord(:,1)>size(IM,1),1) = size(IM,1);
@@ -241,14 +246,14 @@ if an3D
         
         idx = sub2ind(size(IM),dilCoord(:,1),dilCoord(:,2),dilCoord(:,3));
         idx = round(idx);
-        
+        %get the connected pores
         conn_pores = ws(idx);
         conn_pores(conn_pores==0) = [];
-
+        %find which pore are connected and their numbers
         IDconn = unique(conn_pores);
         NRconn(i) = length(IDconn);
         
-        % calculate position of max distance (use extRad) ADDED SUSANA
+        % calculate position of max distance (use extRad) 
         x = round(stats.BoundingBox(i,1));
         y = round(stats.BoundingBox(i,2));
         z = round(stats.BoundingBox(i,3));
@@ -260,11 +265,6 @@ if an3D
         idx=find(sel_im==max(sel_im(:)));
         [ind(:,2),ind(:,1),ind(:,3)] = ind2sub(size(sel_im),idx);
         ctr_ext3D(i,:)=round(stats.BoundingBox(i,1:3))+mean(ind,1)-1;
-        
-%         if any(ctr_ext3D(i,:)>size(IM,1))
-%             disp('HAAAAA');
-%         end
-
     end
 
     %need to fi all of it below
@@ -280,7 +280,7 @@ if an3D
     pores3D.throats = throats;
     pores3D.connect = NRconn;
     pores3D.diameter = stats.EquivDiameter;
-    pores3D.ctr_ext = ctr_ext3D; %ADDED SUSANA
+    pores3D.ctr_ext = ctr_ext3D;
     h = waitbar(1,h,'Done');
 
     pause(1);

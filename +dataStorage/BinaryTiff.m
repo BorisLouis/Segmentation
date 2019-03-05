@@ -9,7 +9,9 @@
 %           Boris Louis: https://borislouis.github.io/                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-%There is no output to this function.
+%There is no output to this function. A binary tiff is saved in the current
+%matlab folder if just a filename is provided. For specific storage one
+%just need to provide tifName as : 'FolderName\tifName'
 
 function BinaryTiff(tifName,BW)
     assert(ischar(tifName),'Filename needs to be a char');
