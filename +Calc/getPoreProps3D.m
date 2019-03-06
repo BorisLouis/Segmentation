@@ -47,7 +47,7 @@ function [pores3D] = getPoreProps3D(IMScaled)
         ctr3D(i, :) = stats(i,:).Centroid;
          %Calculate connectivity by expanding the coordinate of a pores
             %and checking overlap with others
-        [I,J,K] = ind2sub(size(IM),stats(i,:).VoxelIdxList{1});
+        [I,J,K] = ind2sub(size(IMScaled),stats(i,:).VoxelIdxList{1});
         coord = [I-ctr3D(i,2) J-ctr3D(i,1) K-ctr3D(i,3)];
         %Scale factor is define for each pore to get it about 2 pixel
         %bigger than it really is (hence connecting it to other pores as if
@@ -61,11 +61,11 @@ function [pores3D] = getPoreProps3D(IMScaled)
         %than using imdilate on the full image/volume 
         dilCoord  =[dilCoord(:,1)+ctr3D(i,2) dilCoord(:,2)+ctr3D(i,1) dilCoord(:,3)+ctr3D(i,3)];
         dilCoord(dilCoord<1) = 1;
-        dilCoord(dilCoord(:,1)>size(IM,1),1) = size(IM,1);
-        dilCoord(dilCoord(:,2)>size(IM,2),2) = size(IM,2);
-        dilCoord(dilCoord(:,3)>size(IM,3),3) = size(IM,3);
+        dilCoord(dilCoord(:,1)>size(IMScaled,1),1) = size(IMScaled,1);
+        dilCoord(dilCoord(:,2)>size(IMScaled,2),2) = size(IMScaled,2);
+        dilCoord(dilCoord(:,3)>size(IMScaled,3),3) = size(IMScaled,3);
         
-        idx = sub2ind(size(IM),dilCoord(:,1),dilCoord(:,2),dilCoord(:,3));
+        idx = sub2ind(size(IMScaled),dilCoord(:,1),dilCoord(:,2),dilCoord(:,3));
         idx = round(idx);
         %get the connected pores
         conn_pores = ws(idx);

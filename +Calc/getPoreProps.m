@@ -29,7 +29,7 @@
 %           Susana Rocha: https://susanarocha.github.io/                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-function [pores2D,pores3D] = poreProps(IM,IMScaled,dim)
+function [pores2D,pores3D] = getPoreProps(IM,IMScaled,dim)
 %check number of input provided
 switch nargin
     case 1
