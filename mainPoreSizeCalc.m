@@ -26,7 +26,7 @@ close all;
 %% User Input
 pxSizeXY = 180; %in nm
 pxSizeZ = 404;
-dim = 'both';%dimension to perform analysis '2D', '3D' or 'both'
+dim = '3D';%dimension to perform analysis '2D', '3D' or 'both'
 fileExt = '.tif';
 outputName = 'PoreSize-Results';
 data2Use   = 'adapt';%'global'
