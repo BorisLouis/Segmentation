@@ -25,12 +25,12 @@ function [pores3D] = getPoreProps3D(IMScaled)
     imD(LocMax3) = min(imD(:));
     ws = watershed(imD);
     ws(~IMScaled) = 0;
-    ws = bwareaopen(ws,4);%remove small pores
-    ws = bwlabeln(ws);
+    ws = bwareaopen(logical(ws),4);%remove small pores
+    ws = bwlabeln(logical(ws));
     %figure, imagesc(ws(:,:,6));
     h = waitbar(0.6,h,'Getting pore 3D properties...');
     %Calculation of pore properties in 3D:
-    stats = regionprops3(logical(ws), 'voxelIdxList', 'Volume', 'Image', 'Centroid','EquivDiameter', 'BoundingBox'); %ADDED SUSANA
+    stats = regionprops3(ws, 'voxelIdxList', 'Volume', 'Image', 'Centroid','EquivDiameter', 'BoundingBox'); %ADDED SUSANA
     %Memory preallocation
     extRad3D = zeros(size(stats,1),1);
     inRad3D  = zeros(size(stats,1),1);
@@ -47,24 +47,73 @@ function [pores3D] = getPoreProps3D(IMScaled)
         ctr3D(i, :) = stats(i,:).Centroid;
          %Calculate connectivity by expanding the coordinate of a pores
             %and checking overlap with others
-        [I,J,K] = ind2sub(size(IMScaled),stats(i,:).VoxelIdxList{1});
-        coord = [I-ctr3D(i,2) J-ctr3D(i,1) K-ctr3D(i,3)];
-        %Scale factor is define for each pore to get it about 2 pixel
-        %bigger than it really is (hence connecting it to other pores as if
-        %we had not performed watershed)
-        scaleFactor = (abs(coord)+2)./abs(coord);
-        dilCoord = coord;
-        dilCoord(dilCoord(:,1)~=0,1) = coord(coord(:,1)~=0,1).*scaleFactor(coord(:,1)~=0,1);
-        dilCoord(dilCoord(:,2)~=0,2) = coord(coord(:,2)~=0,2).*scaleFactor(coord(:,2)~=0,2);
-        dilCoord(dilCoord(:,3)~=0,3) = coord(coord(:,3)~=0,3).*scaleFactor(coord(:,3)~=0,3);
-        %Calculation based on coordinate because much faster to process
-        %than using imdilate on the full image/volume 
-        dilCoord  =[dilCoord(:,1)+ctr3D(i,2) dilCoord(:,2)+ctr3D(i,1) dilCoord(:,3)+ctr3D(i,3)];
-        dilCoord(dilCoord<1) = 1;
-        dilCoord(dilCoord(:,1)>size(IMScaled,1),1) = size(IMScaled,1);
-        dilCoord(dilCoord(:,2)>size(IMScaled,2),2) = size(IMScaled,2);
-        dilCoord(dilCoord(:,3)>size(IMScaled,3),3) = size(IMScaled,3);
         
+        poreImage = stats(i,:).Image{1};    
+        dilated   = zeros(size(poreImage,1)+6,size(poreImage,2)+6,...
+            size(poreImage,3)+6);
+        
+        dilated(4:end-3,4:end-3,4:end-3) = poreImage;
+        r=2;
+        se = strel('sphere',r);
+        dilated = imdilate(dilated,se);
+        Coord = find(dilated==1);
+        
+        [I,J,K] = ind2sub(size(dilated),Coord);
+        dilCoord = [I(:),J(:),K(:)];
+        ctrTmp = mean(dilCoord,1);
+        
+        dilCoord = dilCoord-ctrTmp + ctr3D(i,[2 1 3]);
+        
+        
+        imtest = zeros(size(imD));
+%         [I,J,K] = ind2sub(size(IMScaled),stats(i,:).VoxelIdxList{1});
+%         %%%%% TEST1
+%         figure 
+%         imTest1 = imtest;
+%         imTest1(stats(i,:).VoxelIdxList{1}) = 1;
+%         imagesc(mean(imTest1,3));
+%         %%%%% test2
+%         coord = [I-ctr3D(i,2) J-ctr3D(i,1) K-ctr3D(i,3)];
+%         %Scale factor is define for each pore to get it about 2 pixel
+%         %bigger than it really is (hence connecting it to other pores as if
+%         %we had not performed watershed)
+%         scaleFactor = (abs(coord)+2)./abs(coord);
+%         dilCoord = coord;
+%         dilCoord(dilCoord(:,1)~=0,1) = coord(coord(:,1)~=0,1).*scaleFactor(coord(:,1)~=0,1);
+%         dilCoord(dilCoord(:,2)~=0,2) = coord(coord(:,2)~=0,2).*scaleFactor(coord(:,2)~=0,2);
+%         dilCoord(dilCoord(:,3)~=0,3) = coord(coord(:,3)~=0,3).*scaleFactor(coord(:,3)~=0,3);
+%         %Calculation based on coordinate because much faster to process
+%         %than using imdilate on the full image/volume 
+%         dilCoord  =[dilCoord(:,1)+ctr3D(i,2) dilCoord(:,2)+ctr3D(i,1) dilCoord(:,3)+ctr3D(i,3)];
+%         dilCoord(dilCoord<1) = 1;
+%         dilCoord(dilCoord(:,1)>size(IMScaled,1),1) = size(IMScaled,1);
+%         dilCoord(dilCoord(:,2)>size(IMScaled,2),2) = size(IMScaled,2);
+%         dilCoord(dilCoord(:,3)>size(IMScaled,3),3) = size(IMScaled,3);
+% %           coord = [I J K];
+% %           scaleFactor = (coord+2)./coord;%(abs(coord)+2)./abs(coord);
+% %           dilCoord = coord.*scaleFactor;
+% %           %put it back in place
+% %           ctrtmp = mean(dilCoord,1);
+% %           
+%           dilCoord = dilCoord -ctrtmp + ctr3D(i,[2 1 3]);
+%           
+%           %clean borders
+          dilCoord(dilCoord<1) = 1;
+          dilCoord(dilCoord(:,1)>size(IMScaled,1),1) = size(IMScaled,1);
+          dilCoord(dilCoord(:,2)>size(IMScaled,2),2) = size(IMScaled,2);
+          dilCoord(dilCoord(:,3)>size(IMScaled,3),3) = size(IMScaled,3);
+              
+          dilCoord = round(dilCoord);
+
+% %%%%% TEST1
+%         imTest2 = imtest;
+%         
+%         figure
+%         idx = sub2ind(size(imTest2),dilCoord(:,1),dilCoord(:,2),dilCoord(:,3));
+%         imTest2(idx) = 1;
+%         imagesc(mean(imTest2,3));
+% %%%%% TEST1
+
         idx = sub2ind(size(IMScaled),dilCoord(:,1),dilCoord(:,2),dilCoord(:,3));
         idx = round(idx);
         %get the connected pores
