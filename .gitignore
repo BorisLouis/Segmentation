@@ -1,4 +1,4 @@
-SegmentedStacks/
+/SegmentedStacks/*
 smoothpatch_inversedistance_double.mexw64
 smoothpatch_curvature_double.mexw64
 vertex_neighbours_double.mexw64
