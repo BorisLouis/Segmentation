@@ -2,11 +2,11 @@
 % surface of the boundary between 0 and 1 in the binary data. After the
 % isosurface is made, the isosurface is smoothen to improve the
 % visualization
-% 
+%
 % !!!!!!! the code require to install a matlab compiler for c/c++ that can
 % be found at:
 % https://www.mathworks.com/matlabcentral/fileexchange/52848-matlab-support-for-mingw-w64-c-c-compiler
-% 
+%
 % The smoothing of the data was NOT WRITTEN by the author, the code written
 % in c is already included in the folder but more information can be found
 % at: %https://www.mathworks.com/matlabcentral/fileexchange/26710-smooth-triangulated-mesh
@@ -24,7 +24,9 @@
 % Susana Rocha (https://github.com/SusanaRocha)                           %
 % Website: https://susanarocha.github.io/                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+clear;
+close all;
+clc;
 %compile c code for smoothing
 mex +rendering3D\smoothpatch_curvature_double.c -v
 mex +rendering3D\smoothpatch_inversedistance_double.c -v
@@ -42,9 +44,9 @@ colorPores = [0.4 0.8 0.8];
 xRange = [30 196];%px
 yRange = [30 196];%px
 
-%more parameter are available and can be checked withing the smoothpatch
+%more parameter are available and can be checked within the smoothpatch
 %function, the default parameter put in this implementation were satisfying
-%to us. 
+%to us.
 %% load data
 %open file selector
 [name,path] = uigetfile('*.tif','Please choose a binary file to model');
@@ -75,7 +77,7 @@ if isfolder(dataPoreSize)
         
     end
 else
-        pores = false;
+    pores = false;
 end
 
 %% Preparing data
@@ -86,7 +88,7 @@ xRange = xRange * pxSizeXY*1e-3;
 yRange = yRange * pxSizeXY*1e-3;
 
 if pores
-
+    
     poresCoord=allData(1).pores3D.ctr_ext;
     idxX = and(poresCoord(:,1)>=xRange(1),poresCoord(:,1)<=xRange(2));
     idxY = and(poresCoord(:,2)>=yRange(1),poresCoord(:,2)<=yRange(2));
@@ -94,9 +96,25 @@ if pores
     poresCoord = poresCoord(idx,:);
     extRad=allData(1).pores3D.extRad;
     extRad = extRad(idx);
-
+    
+    connID = allData(1).pores3D.connID;
+    
+    
+    connID = connID(idx);
+    idxF = find(idx==1);
+    %clean connectivity
+    for i = 1 : length(connID)
+        list = connID{i};
+        idx = ~ismember(list,idxF);
+        list(idx) = [];
+        connID{i} = list;
+        
+    end
+   
+%     idx = cellfun(@isempty,connID);
+%     connID(idx) = [];
 else
-    warning('no pores data were found so they will not be plotted');
+    warning('no pores data were found so they will not be plotted please run mainPore Size calc of the file of interest first.');
 end
 
 zRange = [0 max(poresCoord(:,3))];
@@ -124,18 +142,18 @@ if zColor
     colormap('jet')
     p.EdgeColor = 'none';
     daspect([2 2 1])
-    view(3); 
+    view(3);
     axis tight
-    camlight 
+    camlight
     lighting gouraud
     title('Z-coloring')
 else
     p2 = patch(smoothISurface);
     p2.FaceColor = colorModel;
     p2.EdgeColor = 'none';
-    view(3); 
+    view(3);
     axis tight
-    camlight 
+    camlight
     lighting gouraud
     title('unicolor');
 end
@@ -145,37 +163,48 @@ end
 %% displaying pores
 if pores
     hold on
-   
+    
     rad=extRad;%(IsInside); %convert rad to pixels
     %plot spheres
-    imCopy = zeros(size(data2Render),'logical');
+    
     nfacets = 15;
     X = poresCoord(:,1)-xRange(1);
     Y = poresCoord(:,2)-yRange(1);
     Z = poresCoord(:,3);
     S = rad;
     
-    xRange = xRange-xRange(1);
-    yRange = yRange-yRange(1);
-    zRange = zRange-zRange(1);
+    xRangeShift = xRange-xRange(1);
+    yRangeShift = yRange-yRange(1);
+    zRangeShift = zRange-zRange(1);
     %-- Sphere facets
     [sx,sy,sz]= sphere(nfacets);
-
+    data2Plot = struct([]);
+    
     for i=1:length(rad)
-       SX = sx*S(i)+X(i);
-       SY = sy*S(i)+Y(i);
-       SZ = sz*S(i)+Z(i);
-
-       SX(SX<xRange(1)) = xRange(1);
-       SX(SX>xRange(2)) = xRange(2);
-       SY(SY<yRange(1)) = yRange(1);
-       SY(SY>yRange(2)) = yRange(2);
-       SZ(SZ<zRange(1)) = zRange(1);
-       SZ(SZ>zRange(2)) = zRange(2);
-
-       surf(SX, SY, SZ,...
+        SX = sx*S(i)+X(i);
+        SY = sy*S(i)+Y(i);
+        SZ = sz*S(i)+Z(i);
+        
+        SX(SX<xRangeShift(1)) = xRangeShift(1);
+        SX(SX>xRangeShift(2)) = xRangeShift(2);
+        SY(SY<yRangeShift(1)) = yRangeShift(1);
+        SY(SY>yRangeShift(2)) = yRangeShift(2);
+        SZ(SZ<zRangeShift(1)) = zRangeShift(1);
+        SZ(SZ>zRangeShift(2)) = zRangeShift(2);
+        
+        surf(SX, SY, SZ,...
             'LineStyle','none',...
             'FaceColor',colorPores);
+        %store data
+        data2Plot(i).SX = SX;
+        data2Plot(i).SY = SY;
+        data2Plot(i).SZ = SZ;
+        data2Plot(i).X = X(i);
+        data2Plot(i).Y = Y(i);
+        data2Plot(i).Z = Z(i);
+        data2Plot(i).R = S(i);
+        data2Plot(i).idx = idxF(i);
+        
     end
 end
 %make axis have same size scale
@@ -183,3 +212,152 @@ axis image;
 %save the figure
 fileName = [path filesep namenoExt 'model3D'];
 saveas(gcf,fileName);
+
+%% Plot connectivity
+if pores
+   
+    figure
+    hold on
+    camlight
+    lighting gouraud
+    nPores = length(connID);
+    parent = [];
+    nConn = cellfun(@length,connID);
+    
+    color =  jet(max(nConn)+1);%for later
+    idx2Color = unique(nConn);
+    for i =1:nPores
+        currList = connID{i};
+        %clean list
+        currList(currList<=i) = [];
+        if ~isempty(currList)
+            currPore = data2Plot(i).idx;
+            idxCPore = [data2Plot.idx]==currPore;
+        %Plot Sphere currPore
+            SX = sx+X(i);
+            SY = sy+Y(i);
+            SZ = sz+Z(i);
+
+            SX(SX<xRangeShift(1)) = xRangeShift(1);
+            SX(SX>xRangeShift(2)) = xRangeShift(2);
+            SY(SY<yRangeShift(1)) = yRangeShift(1);
+            SY(SY>yRangeShift(2)) = yRangeShift(2);
+            SZ(SZ<zRangeShift(1)) = zRangeShift(1);
+            SZ(SZ>zRangeShift(2)) = zRangeShift(2);
+            
+%             SX = data2Plot(idxCPore).SX;
+%             SY = data2Plot(idxCPore).SY;
+%             SZ = data2Plot(idxCPore).SZ;
+            surf(SX, SY, SZ,...
+            'LineStyle','none',...
+            'FaceColor',color(idx2Color == length(currList),:));
+                
+            X1 = data2Plot(idxCPore).X;
+            Y1 = data2Plot(idxCPore).Y;
+            Z1 = data2Plot(idxCPore).Z;
+            
+            for j = 1:length(currList)
+            idx = [data2Plot.idx]==currList(j);
+        
+            %plot cylinder
+            X2 = data2Plot(idx).X;
+            Y2 = data2Plot(idx).Y;
+            Z2 = data2Plot(idx).Z;
+            
+            r1 = [X1,Y1,Z1];
+            r2 = [X2,Y2,Z2];
+            
+            [Xc,Yc,Zc] = rendering3D.cylinder2P(0.2,20,r1,r2);
+            
+            surf(Xc, Yc, Zc,...
+            'LineStyle','none',...
+            'FaceColor',color(idx2Color == length(currList),:),'FaceAlpha',0.5);
+            end
+            
+        end
+    end
+%% Recursion attempt
+figure 
+hold on
+    for i=1:nPores
+        
+        currList = connID{i};
+        if ~isempty(currList)
+            
+            currPore = data2Plot(i).idx;
+            parent = [];
+           
+            connID = computePores(parent,currPore,currList,connID,data2Plot,color(i,:));
+            
+        end
+    end
+    camlight
+    lighting gouraud
+    nPores = length(connID);
+    
+    hold off;
+end
+%% function
+function [connID] = computePores(parent,currPore,list,connID,data2Plot,color)
+
+    %clean the list to avoid repetition
+    idx1 = ismember(list,parent);
+    list(idx1) = [];
+    list(list<=currPore) = [];
+%     idx2 = ismember(list,currPore);
+%     list(idx2) = [];
+%     idx3 = ismember(list,encountered);
+%     list(idx3) = [];
+%     
+    if isempty(list)
+    else
+            idxCPore = [data2Plot.idx]==currPore;
+        %Plot Sphere currPore
+            SX = data2Plot(idxCPore).SX;
+            SY = data2Plot(idxCPore).SY;
+            SZ = data2Plot(idxCPore).SZ;
+            surf(SX, SY, SZ,...
+            'LineStyle','none',...
+            'FaceColor',color);
+                
+            X1 = data2Plot(idxCPore).X;
+            Y1 = data2Plot(idxCPore).Y;
+            Z1 = data2Plot(idxCPore).Z;
+         %encountered = [encountered(:); currPore(:); list(:)];
+        for i = 1:length(list)
+            idx = [data2Plot.idx]==list(i);
+            %Plot Sphere list1
+            SX = data2Plot(idx).SX;
+            
+            SY = data2Plot(idx).SY;
+            SZ = data2Plot(idx).SZ;
+            surf(SX, SY, SZ,...
+            'LineStyle','none',...
+            'FaceColor',color);
+        
+            %plot cylinder
+            X2 = data2Plot(idx).X;
+            Y2 = data2Plot(idx).Y;
+            Z2 = data2Plot(idx).Z;
+            
+            r1 = [X1,Y1,Z1];
+            r2 = [X2,Y2,Z2];
+            
+            [X,Y,Z] = rendering3D.cylinder2P(0.2,20,r1,r2);
+            
+            surf(X, Y, Z,...
+            'LineStyle','none',...
+            'FaceColor',color);
+            
+            cPore   = list(i);
+            idx = [data2Plot.idx] ==list(i);
+            cParent = [parent currPore];
+            cList   = connID{idx};
+            
+            [connID] = computePores(cParent,cPore,cList,connID,data2Plot,color);
+
+        end
+        connID{currPore} = [];
+        
+    end
+end
