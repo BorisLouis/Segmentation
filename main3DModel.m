@@ -233,21 +233,21 @@ if pores
         if ~isempty(currList)
             currPore = data2Plot(i).idx;
             idxCPore = [data2Plot.idx]==currPore;
-        %Plot Sphere currPore
-            SX = sx+X(i);
-            SY = sy+Y(i);
-            SZ = sz+Z(i);
-
-            SX(SX<xRangeShift(1)) = xRangeShift(1);
-            SX(SX>xRangeShift(2)) = xRangeShift(2);
-            SY(SY<yRangeShift(1)) = yRangeShift(1);
-            SY(SY>yRangeShift(2)) = yRangeShift(2);
-            SZ(SZ<zRangeShift(1)) = zRangeShift(1);
-            SZ(SZ>zRangeShift(2)) = zRangeShift(2);
+%         %Plot Sphere currPore
+%             SX = sx+X(i);
+%             SY = sy+Y(i);
+%             SZ = sz+Z(i);
+% 
+%             SX(SX<xRangeShift(1)) = xRangeShift(1);
+%             SX(SX>xRangeShift(2)) = xRangeShift(2);
+%             SY(SY<yRangeShift(1)) = yRangeShift(1);
+%             SY(SY>yRangeShift(2)) = yRangeShift(2);
+%             SZ(SZ<zRangeShift(1)) = zRangeShift(1);
+%             SZ(SZ>zRangeShift(2)) = zRangeShift(2);
             
-%             SX = data2Plot(idxCPore).SX;
-%             SY = data2Plot(idxCPore).SY;
-%             SZ = data2Plot(idxCPore).SZ;
+            SX = data2Plot(idxCPore).SX;
+            SY = data2Plot(idxCPore).SY;
+            SZ = data2Plot(idxCPore).SZ;
             surf(SX, SY, SZ,...
             'LineStyle','none',...
             'FaceColor',color(idx2Color == length(currList),:));
@@ -286,8 +286,8 @@ hold on
             
             currPore = data2Plot(i).idx;
             parent = [];
-           
-            connID = computePores(parent,currPore,currList,connID,data2Plot,color(i,:));
+            encountered = [];
+            connID = computePores(parent,currPore,currList,connID,data2Plot,color(i,:),encountered);
             
         end
     end
@@ -298,7 +298,7 @@ hold on
     hold off;
 end
 %% function
-function [connID] = computePores(parent,currPore,list,connID,data2Plot,color)
+function [connID] = computePores(parent,currPore,list,connID,data2Plot,color,encountered)
 
     %clean the list to avoid repetition
     idx1 = ismember(list,parent);
@@ -306,8 +306,8 @@ function [connID] = computePores(parent,currPore,list,connID,data2Plot,color)
     list(list<=currPore) = [];
 %     idx2 = ismember(list,currPore);
 %     list(idx2) = [];
-%     idx3 = ismember(list,encountered);
-%     list(idx3) = [];
+    idx3 = ismember(list,encountered);
+    list(idx3) = [];
 %     
     if isempty(list)
     else
@@ -323,7 +323,7 @@ function [connID] = computePores(parent,currPore,list,connID,data2Plot,color)
             X1 = data2Plot(idxCPore).X;
             Y1 = data2Plot(idxCPore).Y;
             Z1 = data2Plot(idxCPore).Z;
-         %encountered = [encountered(:); currPore(:); list(:)];
+            encountered = [encountered(:); currPore(:); list(:)];
         for i = 1:length(list)
             idx = [data2Plot.idx]==list(i);
             %Plot Sphere list1
@@ -354,7 +354,7 @@ function [connID] = computePores(parent,currPore,list,connID,data2Plot,color)
             cParent = [parent currPore];
             cList   = connID{idx};
             
-            [connID] = computePores(cParent,cPore,cList,connID,data2Plot,color);
+            [connID] = computePores(cParent,cPore,cList,connID,data2Plot,color,encountered);
 
         end
         connID{currPore} = [];
