@@ -26,7 +26,7 @@ close all;
 %% User Input
 pxSizeXY = 180; %in nm
 pxSizeZ = 404;
-dim = '2D';%dimension to perform analysis '2D', '3D' or 'both'
+dim = '3D';%dimension to perform analysis '2D', '3D' or 'both'
 fileExt = '.tif';
 outputName = 'PoreSize-Results';
 data2Use   = 'adapt';%'global'
@@ -128,5 +128,5 @@ fprintf(fid,' In such a way that the user knows what variable value were used.\n
 fprintf(fid,'Pixel size used: %d',pxSizeXY);
 fclose(fid);
 
-save([ outDir filesep data2Use 'PoreProps'],'allData');
+save([ outDir filesep data2Use 'PoreProps'],'allData','-v7.3');
 h = msgbox('The Data were succesfully saved !', 'Success');

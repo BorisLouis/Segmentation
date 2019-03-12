@@ -112,7 +112,6 @@ pores3D.connect = NRconn;
 pores3D.diameter = stats.EquivDiameter;
 pores3D.ctr_ext = ctr_ext3D;
 pores3D.connID  = IDconn;
-pores3D.poreIDX = stats.VoxelIdxList;
 h = waitbar(1,h,'Done');
 
 pause(1);
