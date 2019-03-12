@@ -277,25 +277,25 @@ if pores
         end
     end
 %% Recursion attempt
-figure 
-hold on
-    for i=1:nPores
-        
-        currList = connID{i};
-        if ~isempty(currList)
-            
-            currPore = data2Plot(i).idx;
-            parent = [];
-            encountered = [];
-            connID = computePores(parent,currPore,currList,connID,data2Plot,color(i,:),encountered);
-            
-        end
-    end
-    camlight
-    lighting gouraud
-    nPores = length(connID);
-    
-    hold off;
+% figure 
+% hold on
+%     for i=1:nPores
+%         
+%         currList = connID{i};
+%         if ~isempty(currList)
+%             
+%             currPore = data2Plot(i).idx;
+%             parent = [];
+%             encountered = [];
+%             connID = computePores(parent,currPore,currList,connID,data2Plot,color(i,:),encountered);
+%             
+%         end
+%     end
+%     camlight
+%     lighting gouraud
+%     nPores = length(connID);
+%     
+%     hold off;
 end
 %% function
 function [connID] = computePores(parent,currPore,list,connID,data2Plot,color,encountered)

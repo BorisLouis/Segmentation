@@ -83,7 +83,7 @@ for i = 1:length(idx2Stack)
         % resizing according to diff in pixel size
         IMScaled = imresize3(double(IM),[size(IM,1),size(IM,2),round(size(IM,3)*pxSizeZ/pxSizeXY)]);
         IMScaled = round(IMScaled);
-
+    
         [pores2D,pores3D] = Calc.getPoreProps(IM,IMScaled,dim);
         if ~isempty(pores2D)
             pores2D.area = pores2D.area*pxArea;
