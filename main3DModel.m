@@ -209,6 +209,7 @@ if pores
 end
 %make axis have same size scale
 axis image;
+
 %save the figure
 fileName = [path filesep namenoExt 'model3D'];
 saveas(gcf,fileName);
@@ -218,6 +219,7 @@ if pores
    
     figure
     hold on
+    axis tight
     camlight
     lighting gouraud
     nPores = length(connID);
@@ -250,52 +252,58 @@ if pores
             SZ = data2Plot(idxCPore).SZ;
             surf(SX, SY, SZ,...
             'LineStyle','none',...
-            'FaceColor',color(idx2Color == length(currList),:));
+            'FaceColor',colorPores);%color(idx2Color == length(currList),:));
                 
             X1 = data2Plot(idxCPore).X;
             Y1 = data2Plot(idxCPore).Y;
             Z1 = data2Plot(idxCPore).Z;
-            
+            R1 = data2Plot(idxCPore).R;
             for j = 1:length(currList)
-            idx = [data2Plot.idx]==currList(j);
-        
-            %plot cylinder
-            X2 = data2Plot(idx).X;
-            Y2 = data2Plot(idx).Y;
-            Z2 = data2Plot(idx).Z;
-            
-            r1 = [X1,Y1,Z1];
-            r2 = [X2,Y2,Z2];
-            
-            [Xc,Yc,Zc] = rendering3D.cylinder2P(0.2,20,r1,r2);
+                idx = [data2Plot.idx]==currList(j);
+
+                %plot cylinder
+                X2 = data2Plot(idx).X;
+                Y2 = data2Plot(idx).Y;
+                Z2 = data2Plot(idx).Z;
+                R2 = data2Plot(idx).R;
+
+                r1 = [X1,Y1,Z1];
+                r2 = [X2,Y2,Z2];
+                %Test R1 and R2 being Rpores/2 of the two pores to be
+                %connected respectively
+                r = 0.2;%[R1,R2]/3;%0.2
+            [Xc,Yc,Zc] = rendering3D.cylinder2P(r,20,r1,r2);
             
             surf(Xc, Yc, Zc,...
             'LineStyle','none',...
-            'FaceColor',color(idx2Color == length(currList),:),'FaceAlpha',0.5);
+            'FaceColor',colorPores,'FaceAlpha',1);
+            %color(idx2Color == length(currList),:)
             end
             
         end
     end
+    view(3);
+    axis image;
 %% Recursion attempt
-figure 
-hold on
-    for i=1:nPores
-        
-        currList = connID{i};
-        if ~isempty(currList)
-            
-            currPore = data2Plot(i).idx;
-            parent = [];
-            encountered = [];
-            connID = computePores(parent,currPore,currList,connID,data2Plot,color(i,:),encountered);
-            
-        end
-    end
-    camlight
-    lighting gouraud
-    nPores = length(connID);
-    
-    hold off;
+% figure 
+% hold on
+%     for i=1:nPores
+%         
+%         currList = connID{i};
+%         if ~isempty(currList)
+%             
+%             currPore = data2Plot(i).idx;
+%             parent = [];
+%             encountered = [];
+%             connID = computePores(parent,currPore,currList,connID,data2Plot,color(i,:),encountered);
+%             
+%         end
+%     end
+%     camlight
+%     lighting gouraud
+%     nPores = length(connID);
+%     
+%     hold off;
 end
 %% function
 function [connID] = computePores(parent,currPore,list,connID,data2Plot,color,encountered)
