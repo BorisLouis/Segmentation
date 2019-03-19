@@ -110,9 +110,6 @@ if pores
         connID{i} = list;
         
     end
-   
-%     idx = cellfun(@isempty,connID);
-%     connID(idx) = [];
 else
     warning('no pores data were found so they will not be plotted please run mainPore Size calc of the file of interest first.');
 end
@@ -157,17 +154,15 @@ else
     lighting gouraud
     title('unicolor');
 end
-
-
-
-%% displaying pores
+%% displaying pores in the network
 if pores
     hold on
     
     rad=extRad;%(IsInside); %convert rad to pixels
-    %plot spheres
-    
+    %get spheres
     nfacets = 15;
+    [sx,sy,sz]= sphere(nfacets);
+    %shift coordinate
     X = poresCoord(:,1)-xRange(1);
     Y = poresCoord(:,2)-yRange(1);
     Z = poresCoord(:,3);
@@ -175,23 +170,21 @@ if pores
     
     xRangeShift = xRange-xRange(1);
     yRangeShift = yRange-yRange(1);
-    zRangeShift = zRange-zRange(1);
-    %-- Sphere facets
-    [sx,sy,sz]= sphere(nfacets);
+    zRangeShift = zRange-zRange(1);   
     data2Plot = struct([]);
     
     for i=1:length(rad)
         SX = sx*S(i)+X(i);
         SY = sy*S(i)+Y(i);
         SZ = sz*S(i)+Z(i);
-        
+        %make cropped sphere where sphere goes off limit
         SX(SX<xRangeShift(1)) = xRangeShift(1);
         SX(SX>xRangeShift(2)) = xRangeShift(2);
         SY(SY<yRangeShift(1)) = yRangeShift(1);
         SY(SY>yRangeShift(2)) = yRangeShift(2);
         SZ(SZ<zRangeShift(1)) = zRangeShift(1);
         SZ(SZ>zRangeShift(2)) = zRangeShift(2);
-        
+        %displaying occurs here
         surf(SX, SY, SZ,...
             'LineStyle','none',...
             'FaceColor',colorPores);
@@ -225,28 +218,18 @@ if pores
     nPores = length(connID);
     parent = [];
     nConn = cellfun(@length,connID);
-    
-    color =  jet(max(nConn)+1);%for later
-    idx2Color = unique(nConn);
+    %for color depending on connectivity
+    %color =  jet(max(nConn)+1);%
+    %idx2Color = unique(nConn);
     for i =1:nPores
         currList = connID{i};
-        %clean list
+        %clean list, we remove the pores that have a smaller index than the
+        %current as they were treated earlier in the loop
         currList(currList<=i) = [];
         if ~isempty(currList)
             currPore = data2Plot(i).idx;
             idxCPore = [data2Plot.idx]==currPore;
-%         %Plot Sphere currPore
-%             SX = sx+X(i);
-%             SY = sy+Y(i);
-%             SZ = sz+Z(i);
-% 
-%             SX(SX<xRangeShift(1)) = xRangeShift(1);
-%             SX(SX>xRangeShift(2)) = xRangeShift(2);
-%             SY(SY<yRangeShift(1)) = yRangeShift(1);
-%             SY(SY>yRangeShift(2)) = yRangeShift(2);
-%             SZ(SZ<zRangeShift(1)) = zRangeShift(1);
-%             SZ(SZ>zRangeShift(2)) = zRangeShift(2);
-            
+            %plot sphere 1
             SX = data2Plot(idxCPore).SX;
             SY = data2Plot(idxCPore).SY;
             SZ = data2Plot(idxCPore).SZ;
@@ -258,114 +241,32 @@ if pores
             Y1 = data2Plot(idxCPore).Y;
             Z1 = data2Plot(idxCPore).Z;
             R1 = data2Plot(idxCPore).R;
+            %loop through connected pores to plot a "rod" linking the
+            %current pores and the ones it is connected to.
             for j = 1:length(currList)
                 idx = [data2Plot.idx]==currList(j);
 
-                %plot cylinder
+                %Get coordinate pore2
                 X2 = data2Plot(idx).X;
                 Y2 = data2Plot(idx).Y;
                 Z2 = data2Plot(idx).Z;
                 R2 = data2Plot(idx).R;
-
+                %center to be linked by the rod (cylinder)
                 r1 = [X1,Y1,Z1];
                 r2 = [X2,Y2,Z2];
-                %Test R1 and R2 being Rpores/2 of the two pores to be
-                %connected respectively
-                r = 0.2;%[R1,R2]/3;%0.2
-            [Xc,Yc,Zc] = rendering3D.cylinder2P(r,20,r1,r2);
-            
-            surf(Xc, Yc, Zc,...
-            'LineStyle','none',...
-            'FaceColor',colorPores,'FaceAlpha',1);
-            %color(idx2Color == length(currList),:)
+                % radius of the cylinder
+                r = 0.2;%[R1,R2]/3;
+                %make the cylinder
+                [Xc,Yc,Zc] = rendering3D.cylinder2P(r,20,r1,r2);
+                %plot the cylinder
+                surf(Xc, Yc, Zc,...
+                'LineStyle','none',...
+                'FaceColor',colorPores,'FaceAlpha',1);
+                %color(idx2Color == length(currList),:)
             end
             
         end
     end
     view(3);
     axis image;
-%% Recursion attempt
-% figure 
-% hold on
-%     for i=1:nPores
-%         
-%         currList = connID{i};
-%         if ~isempty(currList)
-%             
-%             currPore = data2Plot(i).idx;
-%             parent = [];
-%             encountered = [];
-%             connID = computePores(parent,currPore,currList,connID,data2Plot,color(i,:),encountered);
-%             
-%         end
-%     end
-%     camlight
-%     lighting gouraud
-%     nPores = length(connID);
-%     
-%     hold off;
-end
-%% function
-function [connID] = computePores(parent,currPore,list,connID,data2Plot,color,encountered)
-
-    %clean the list to avoid repetition
-    idx1 = ismember(list,parent);
-    list(idx1) = [];
-    list(list<=currPore) = [];
-%     idx2 = ismember(list,currPore);
-%     list(idx2) = [];
-    idx3 = ismember(list,encountered);
-    list(idx3) = [];
-%     
-    if isempty(list)
-    else
-            idxCPore = [data2Plot.idx]==currPore;
-        %Plot Sphere currPore
-            SX = data2Plot(idxCPore).SX;
-            SY = data2Plot(idxCPore).SY;
-            SZ = data2Plot(idxCPore).SZ;
-            surf(SX, SY, SZ,...
-            'LineStyle','none',...
-            'FaceColor',color);
-                
-            X1 = data2Plot(idxCPore).X;
-            Y1 = data2Plot(idxCPore).Y;
-            Z1 = data2Plot(idxCPore).Z;
-            encountered = [encountered(:); currPore(:); list(:)];
-        for i = 1:length(list)
-            idx = [data2Plot.idx]==list(i);
-            %Plot Sphere list1
-            SX = data2Plot(idx).SX;
-            
-            SY = data2Plot(idx).SY;
-            SZ = data2Plot(idx).SZ;
-            surf(SX, SY, SZ,...
-            'LineStyle','none',...
-            'FaceColor',color);
-        
-            %plot cylinder
-            X2 = data2Plot(idx).X;
-            Y2 = data2Plot(idx).Y;
-            Z2 = data2Plot(idx).Z;
-            
-            r1 = [X1,Y1,Z1];
-            r2 = [X2,Y2,Z2];
-            
-            [X,Y,Z] = rendering3D.cylinder2P(0.2,20,r1,r2);
-            
-            surf(X, Y, Z,...
-            'LineStyle','none',...
-            'FaceColor',color);
-            
-            cPore   = list(i);
-            idx = [data2Plot.idx] ==list(i);
-            cParent = [parent currPore];
-            cList   = connID{idx};
-            
-            [connID] = computePores(cParent,cPore,cList,connID,data2Plot,color,encountered);
-
-        end
-        connID{currPore} = [];
-        
-    end
 end
