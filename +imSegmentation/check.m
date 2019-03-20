@@ -1,4 +1,7 @@
-function check (path, idx,frameSkip)
+% The aim of this function is to be able to check the quality of the
+% segmentation so the user can evaluate if the parameters input are okay or
+% not.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% AUTHOR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Boris Louis (https://github.com/BorisLouis)                             %
 % Rafael Camacho Dejay (https://github.com/CamachoDejay)                  %
@@ -7,6 +10,7 @@ function check (path, idx,frameSkip)
 %           Boris Louis: https://borislouis.github.io/                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+function check (path, idx,frameSkip)
 % Extract Tif file from the given path and do a couple of assertion before
 % loading anything
 folder2Segmentation = [path filesep 'SegmentedStacks'];

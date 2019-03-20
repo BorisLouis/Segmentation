@@ -1,5 +1,5 @@
 function [gSegStack,aSegStack] = segmentStack(imStack,varargin)
-% segment an 2D or 3D image.
+% segment a 2D or 3D image.
 %
 % function [gSegStack,aSegStack] = segmentStack(imStack, ...)
 %
@@ -30,10 +30,10 @@ function [gSegStack,aSegStack] = segmentStack(imStack,varargin)
 % for adaptive threshold
 
 %   Outputs
-%'gSegStack' - binarized image with global method (= 1 threshold for the
-%whole stack
-%'aSegStack' - binarized image with adaptive method (= locally determined
-%threhsold)
+% 'gSegStack' - binarized image with global method (= 1 threshold for the
+% whole stack
+% 'aSegStack' - binarized image with adaptive method (= locally determined
+% threhsold)
 
 
 %parse user input

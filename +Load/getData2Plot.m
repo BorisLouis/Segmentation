@@ -1,3 +1,8 @@
+% The aim of this function is to extract from the data output of
+% mainPoreSizeCalc some specific properties (prop2plot==> 'connect','extRad',...)
+% from a specific data run dimensionality (2D or 3D). This is more of a
+% convenience function that is used within plotPoreProps.
+
 function [data2Plot] = getData2Plot(file2Analyze,dim,prop2Plot)
 
     [~,nameNoExt,~] = cellfun(@fileparts,{file2Analyze.name},'UniformOutput',0);

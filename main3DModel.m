@@ -15,8 +15,9 @@
 % The code is run, it will open the file selector from window, the user can
 % then choose tif files of their binary images (segmented stacks). Only
 % binary images are supported. The code will then calculate the isosurface
-% and the smoothing. Finally, the code will display the result and save the
-% figure
+% and the smoothing.Optionnally, the code will represent sphere where pores
+% were detected and make an additional plot with the pores and their 
+% connectivity. Finally, the code will display the result and save the figure
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% AUTHOR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Boris Louis (https://github.com/BorisLouis)                             %
@@ -88,21 +89,22 @@ xRange = xRange * pxSizeXY*1e-3;
 yRange = yRange * pxSizeXY*1e-3;
 
 if pores
-    
+    % extract the data within the user input border
     poresCoord=allData(1).pores3D.ctr_ext;
     idxX = and(poresCoord(:,1)>=xRange(1),poresCoord(:,1)<=xRange(2));
     idxY = and(poresCoord(:,2)>=yRange(1),poresCoord(:,2)<=yRange(2));
     idx = logical(idxX.*idxY);
     poresCoord = poresCoord(idx,:);
+    %extract the radius accordingly
     extRad=allData(1).pores3D.extRad;
     extRad = extRad(idx);
     
-    connID = allData(1).pores3D.connID;
-    
-    
+    %extract connectivity
+    connID = allData(1).pores3D.connID;   
     connID = connID(idx);
     idxF = find(idx==1);
-    %clean connectivity
+    %clean connectivity from out-of-range pores that are connected to
+    %in-range ones.
     for i = 1 : length(connID)
         list = connID{i};
         idx = ~ismember(list,idxF);
@@ -113,7 +115,7 @@ if pores
 else
     warning('no pores data were found so they will not be plotted please run mainPore Size calc of the file of interest first.');
 end
-
+%Here we decided to take the full Z axis
 zRange = [0 max(poresCoord(:,3))];
 %% Making isosurface
 iSurface = isosurface(data2Render,1/2);
@@ -132,7 +134,8 @@ if strcmpi(colorModel,'Z')
 else
     zColor = false;
 end
-
+%Plot the network with Z coloring or unique color depending on the user
+%input
 figure
 if zColor
     p = patch('Faces',smoothISurface.faces,'Vertices',smoothISurface.vertices,'FaceVertexCData',color,'FaceColor','interp');
@@ -157,38 +160,41 @@ end
 %% displaying pores in the network
 if pores
     hold on
-    
     rad=extRad;%(IsInside); %convert rad to pixels
     %get spheres
     nfacets = 15;
     [sx,sy,sz]= sphere(nfacets);
+    
     %shift coordinate
     X = poresCoord(:,1)-xRange(1);
     Y = poresCoord(:,2)-yRange(1);
     Z = poresCoord(:,3);
     S = rad;
-    
+    %Shift range so we plot [0 upperbound]
     xRangeShift = xRange-xRange(1);
     yRangeShift = yRange-yRange(1);
     zRangeShift = zRange-zRange(1);   
     data2Plot = struct([]);
     
     for i=1:length(rad)
+        %shift and scale the created sphere according to radius and XYZ pos
         SX = sx*S(i)+X(i);
         SY = sy*S(i)+Y(i);
         SZ = sz*S(i)+Z(i);
-        %make cropped sphere where sphere goes off limit
+        %crop out of range part of sphere
         SX(SX<xRangeShift(1)) = xRangeShift(1);
         SX(SX>xRangeShift(2)) = xRangeShift(2);
         SY(SY<yRangeShift(1)) = yRangeShift(1);
         SY(SY>yRangeShift(2)) = yRangeShift(2);
         SZ(SZ<zRangeShift(1)) = zRangeShift(1);
         SZ(SZ>zRangeShift(2)) = zRangeShift(2);
-        %displaying occurs here
+        
+        %Plotting sphere occurs here
         surf(SX, SY, SZ,...
             'LineStyle','none',...
             'FaceColor',colorPores);
-        %store data
+        
+        %store data for next step
         data2Plot(i).SX = SX;
         data2Plot(i).SY = SY;
         data2Plot(i).SZ = SZ;

@@ -1,5 +1,17 @@
-function [pores3D] = getPoreProps3D(IMScaled)
+% The aim of this function is to calculate pore properties of e.g. polymer
+% network images in 3D. 
+% INPUT:
+%       IMScaled: IM where the sampling in X,Y and Z is the same (in this case,
+%                 pre-processed within mainPoreSizeCalc. This is crucial as
+%                 otherwise the distance map will be odd as 1 px in XY
+%                 would be different as 1 px in Z.
+% OUTPUT:
+%       pores3D: A structure containing the pore properties:
+%               Inner and outer radius, connectivity, throats, position,
+%               equivalent diameter,....
+%      
 
+function [pores3D] = getPoreProps3D(IMScaled)
 %% Performing analysis in 3D
 %The calculation here are the same than the one in 2D but some
 %adaptation was required to perform it in 3D
@@ -40,6 +52,7 @@ NRconn   = zeros(size(stats,1),1);
 ctr3D    = zeros(size(stats,1),3);
 ctr_ext3D  = zeros(size(stats,1),3);
 IDconn = cell(1,max(ws(:)));
+
 %individual treatment of the pores
 for i = 1:size(stats,1)
     extRad3D(i) = max(D(stats(i,:).VoxelIdxList{1}));
@@ -90,19 +103,22 @@ for i = 1:size(stats,1)
     wx = stats.BoundingBox(i,4);
     wy = stats.BoundingBox(i,5);
     wz = stats.BoundingBox(i,6);
+    
     sel_im = D(y:y+wy-1,x:x+wx-1, z:z+wz-1);
     clear ind
     idx=find(sel_im==max(sel_im(:)));
     [ind(:,2),ind(:,1),ind(:,3)] = ind2sub(size(sel_im),idx);
     ctr_ext3D(i,:)=round(stats.BoundingBox(i,1:3))+mean(ind,1)-1;
+    
 end
 
 %need to fi all of it below
-inRad3D(inRad3D==Inf) = NaN;
+inRad3D(inRad3D == Inf) = NaN;
 
 ws1 = logical(ws); % used to calculate overlap reagions
 mask_throats = IMScaled-ws1; % mask for the throats
 throats = table2array(regionprops3(logical(mask_throats),D,'MaxIntensity'));
+
 h = waitbar(0.9,h,'Storing data');
 pores3D.vol = vol;
 pores3D.extRad = extRad3D;
@@ -112,6 +128,7 @@ pores3D.connect = NRconn;
 pores3D.diameter = stats.EquivDiameter;
 pores3D.ctr_ext = ctr_ext3D;
 pores3D.connID  = IDconn;
+
 h = waitbar(1,h,'Done');
 
 pause(1);

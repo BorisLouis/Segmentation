@@ -1,3 +1,14 @@
+% The aim of this function is to calculate poreProperties in a 2D fashion
+% (frame by frame for 3D stacks). 
+
+%INPUT:
+%       IM: A binary image or binary volume
+
+%OUTPUT:
+%       pores2D: A strutcture containing different poreProperties:
+%                inner and external radii, throats, connectivity, equiv
+%                diameter, center position
+
 function [pores2D] = getPoreProps2D(IM)
 % create variables for storing
     all_areas = [];
@@ -55,7 +66,6 @@ function [pores2D] = getPoreProps2D(IM)
             area(i) = stats(i).Area;
             ctr(i, :) = stats(i).Centroid;
             
-            
             %Calculate connectivity by expanding the coordinate of a pores
             %and checking overlap with others
             poreImage = stats(i,:).Image;
@@ -80,25 +90,9 @@ function [pores2D] = getPoreProps2D(IM)
             
             %round for indexing
             dilCoord = round(dilCoord);
-
+            %get connectivity
             idx = sub2ind(size(im),dilCoord(:,1),dilCoord(:,2));
             idx = round(idx);
-            %%%%%%%
-%             [I,J] = ind2sub(size(im),stats(i).PixelIdxList);
-%             coord = [I-ctr(i,2) J-ctr(i,1)];
-%             scaleFactor = (abs(coord)+2)./abs(coord);
-%             %Calculation based on coordinate because much faster to process
-%             %than using imdilate on the full image/volume
-%             dilCoord = coord;
-%             dilCoord(dilCoord(:,1)~=0,1) = coord(coord(:,1)~=0,1).*scaleFactor(coord(:,1)~=0,1);
-%             dilCoord(dilCoord(:,2)~=0,2) = coord(coord(:,2)~=0,2).*scaleFactor(coord(:,2)~=0,2);
-%     
-%             dilCoord  =[dilCoord(:,1)+ctr(i,2) dilCoord(:,2)+ctr(i,1)];
-%             dilCoord(dilCoord<1) = 1;
-%             dilCoord(dilCoord>size(im,1)) = size(im,1);
-%             idx = sub2ind(size(im),dilCoord(:,1),dilCoord(:,2));
-%             idx = round(idx);
-            
             conn_pores = ws(idx);
             conn_pores(conn_pores==0) = [];
             connID = unique(conn_pores);
