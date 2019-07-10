@@ -29,7 +29,7 @@ pxSizeZ = 404;
 dim = '3D';%dimension to perform analysis '2D', '3D' or 'both'
 fileExt = '.tif';
 outputName = 'PoreSize-Results';
-data2Use   = 'adapt';%'global'
+data2Use   = 'adapt';%'global' or %'adapt'
 
 %% Loading Data
 % conversion from pixel to area

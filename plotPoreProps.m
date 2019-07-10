@@ -113,5 +113,8 @@ for i = 1 : nFile
 
         
     end    
+    %save the figure
+    fileName = [outDir filesep currField prop2Plot];
+    saveas(gcf,fileName);
 end
 

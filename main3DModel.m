@@ -7,7 +7,7 @@
 % be found at:
 % https://www.mathworks.com/matlabcentral/fileexchange/52848-matlab-support-for-mingw-w64-c-c-compiler
 %
-% The smoothing of the data was NOT WRITTEN by the author, the code written
+% The smoothing of the data was NOT WRITTEN by the authors, the code written
 % in c is already included in the folder but more information can be found
 % at: %https://www.mathworks.com/matlabcentral/fileexchange/26710-smooth-triangulated-mesh
 
@@ -275,4 +275,7 @@ if pores
     end
     view(3);
     axis image;
+    %save the figure
+    fileName = [path filesep namenoExt '3Dconnect'];
+    saveas(gcf,fileName);
 end
