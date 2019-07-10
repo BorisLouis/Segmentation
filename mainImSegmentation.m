@@ -37,7 +37,7 @@ threshold = 0.5; %sensitivity for adaptive threshold
 connectivity = 216; %3D connectivity for binarization (only for adaptive threshold)
 diskDim = 4; %disk dimension to clean segmentation artefact (the bigger the more get cleaned).
 S = 2; % size of gauss filter in pixel
-pixZ  = 2;% size of pixel in z vs x/y
+pixZ  = 2;% size of pixel in z vs x/y (ratio)
 fileExt = '.tif'; % only work with TIF
 toAnalyze = 'file'; %if folder is chosen the code will search for all the tif
 %inside the folder and segment them with the input provided.
