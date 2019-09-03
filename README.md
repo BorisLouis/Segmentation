@@ -31,7 +31,7 @@ Once you press run, a dialog where the user can select **folder where PoreSize r
 The main information that needs to be provided is some details about the plotting (e.g. stepSize, number of bins, log scale or not), if you want to plot 2D or 3D determined properties and which propertie you want to plot (volume, internal radius, throat, diameter,...).
 The code will save a figure for each .mat file present in the selected folder. Therefore, if you want to compare/look at different conditions one can put the results output from different conditions in a new folder (give meaningful name to the .mat file as they will be reuse in the figure names) and then run plotPoreProps which will output and save (in a folder called figure) a figure for each file (thus each conditions). 
 
-**Watchout that the results from different z-stack stored in the same folder (segmented together) will be made into one single distribution. This is okay if they were acquired in the same condition (e.g. in our paper, same polymer length, same concentration, same imaging conditions) but may lead to strange results if one mix data that should not be analyzed together.**
+**Watchout that the results from different z-stack stored in the same folder (segmented together) will be made into one single distribution. This is okay if they were acquired in the same condition (e.g. in our paper, same polymer length, same concentration, same imaging conditions) but may lead to unwanted results if one mix data that should not be analyzed together.**
 
 
 
