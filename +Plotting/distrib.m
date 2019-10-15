@@ -8,8 +8,7 @@ function distrib(data,centers,log)
     %plot distribution
     Plotting.distributionPlot(Nf,'histOpt',0, 'showMM',0);
     pp=findobj(gca, 'type', 'patch');
-    set(pp(1), 'FaceColor', [0 0 1]);
-    
+    set(pp(1), 'FaceColor', [0 0 1]);    
     hold on
     
     h = boxplot(data, 'OutlierSize',0.1, 'Colors', [0.2 0.2 0.2; 0.2 0.2 0.2], 'Widths',0.9);

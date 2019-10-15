@@ -65,11 +65,6 @@ for i = 1 : nFile
 end
 %% plotting
 %histogram
-if ~strcmp(prop2Plot,'connect')
-    nSub = 3;
-else
-    nSub = 2;
-end
 
 %For each file, we plot the distribution in 3 different way:
 %Histogram, Complementary Cumulative distribution function (CCDF) and
@@ -80,7 +75,7 @@ for i = 1 : nFile
     currData  = data2Plot.(currField);
     %Plot Histogram
     figure('Name',['Figure ',num2str(i)],'Position',[400,250,640,360])
-    subplot(1,nSub,1)
+    subplot(1,3,1)
     histogram(currData.(prop2Plot){1,1},'FaceColor',[0 0 1])
     box on
     title(['Histogram of ' prop2Plot])
@@ -88,7 +83,7 @@ for i = 1 : nFile
     xlabel(prop2Plot);
     ylabel('Occurence')
     %Plot CCDF
-    subplot(1,nSub,2)
+    subplot(1,3,2)
     plot(currData.CDF{1,1}(:,1),currData.CDF{1,1}(:,2),'color',[0 0 1])
     box on;
     ax = gca;
@@ -99,20 +94,19 @@ for i = 1 : nFile
     xlabel([prop2Plot ' Log scale']);
     ylabel('[1-CDF] Probability [0 1]')
     
-    if ~strcmp(prop2Plot,'connect')
-        
-        subplot(1,nSub,3)
-        x=0:stepSize:max(currData.(prop2Plot){1,1});
-        Plotting.distrib(currData.(prop2Plot){1,1},x,log);
-        title(['Violin dist of ' prop2Plot]);
-        axis square
-        xlabel('Sample')
-        ylabel([prop2Plot,' (µm)'])
-        set(gcf, 'color', 'w')
-        set(gca, 'XTick', 1, 'XTickLabel', {'S1'});
+ 
+    subplot(1,3,3)
+    x=0:stepSize:max(currData.(prop2Plot){1,1});
+    Plotting.distrib(currData.(prop2Plot){1,1},x,log);
+    title(['Violin dist of ' prop2Plot]);
+    axis square
+    xlabel('Sample')
+    ylabel([prop2Plot,' (µm)'])
+    set(gcf, 'color', 'w')
+    set(gca, 'XTick', 1, 'XTickLabel', {'S1'});
 
         
-    end    
+   
     %save the figure
     fileName = [outDir filesep currField prop2Plot];
     saveas(gcf,fileName);
