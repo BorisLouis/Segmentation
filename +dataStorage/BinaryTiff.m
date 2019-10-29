@@ -17,7 +17,7 @@ function BinaryTiff(tifName,BW)
     assert(ischar(tifName),'Filename needs to be a char');
     assert(ismember(length(size(BW)),[2 3]), 'The data you are trying to save has an unexpected dimension');
     test = unique(BW);
-    assert(length(test)>2,'The input data is not binary');
+    assert(length(test)<=2,'The input data is not binary');
 
     t = Tiff(tifName, 'w');
     setTag(t,'ImageLength',size(BW,1))
