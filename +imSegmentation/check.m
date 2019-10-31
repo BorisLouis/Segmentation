@@ -13,13 +13,16 @@
 function check (path, idx,frameSkip)
 % Extract Tif file from the given path and do a couple of assertion before
 % loading anything
-folder2Segmentation = [path filesep 'SegmentedStacks'];
+
 assert(ischar(path),'Path given should be a char');
 assert(isfolder(path),'The path given is not a folder');
+folder2Segmentation = path;
+folder2Raw = [path filesep '..'];%go one folder up in the hierarchy
 assert(isfolder(folder2Segmentation),'No segmented stack found in the given directory');
 fileExt = '.tif';
+
 %Extract the part of the folder that is a tif file
-folderContent = dir(path);
+folderContent = dir(folder2Raw);
 index2Images   = contains({folderContent.name},fileExt);
 file2Analyze = folderContent(index2Images);
 assert(~isempty(file2Analyze),'No file found in the selected directory');
@@ -35,9 +38,8 @@ p2file      = strcat(path2Stacks,tmpName);
 fileInfo    = Load.Movie.tif.getinfo(p2file);
 warning('off','all');
 
-
 frames = fileInfo.Frame_n;
-IM     = Load.Movie.tif.getframes(p2file, 1:frames);
+IMs     = Load.Movie.tif.getframes(p2file, 1:frames);
 disp('DONE with loading --------------')
 
 %Here we load the segmented stack that correspond to the selected file
