@@ -46,14 +46,14 @@ assert(ismember(dim,[2 3]),'imStack is expected to be a 2D or 3D matrix');
 %Parse input and give default values
 params = inputParser;
 params.CaseSensitive = false;
-params.addParameter('frames', 1:imSize(3), @(x) isnumeric(x) && isvector(x) && all(x>0));
+params.addParameter('frames', 1:size(imStack,3), @(x) isnumeric(x) && isvector(x) && all(x>0));
 params.addParameter('connectivity', 8*double(dim==2)+216*double(dim==3),...
     @(x) isnumeric(x) || x> 0);
 params.addParameter('method', 'both',...
     @(x) ischar(x) && (strcmp(x,'both') || strcmp(x,'adaptive') || strcmp(x,'global')));
 params.addParameter('threshold',0.5,@(x) isnumeric(x) && x<=1 && x>0);
 params.addParameter('diskDim', 4, @(x) isnumeric(x) && x>1 );
-params.addParameter('neigh',[301 301 151],@(x) all(isnumeric(x)) && length(size(x))==dim && all(x>1));
+params.addParameter('neigh',[101 101 25],@(x) all(isnumeric(x)) && length(size(x))==dim && all(x>1));
 
 params.parse(varargin{:});
 
@@ -64,7 +64,7 @@ method = params.Results.method;
 threshold = params.Results.threshold;
 diskDim = params.Results.diskDim;
 neigh = params.Results.neigh;
-
+neigh = neigh(1:dim);
 imStack = imStack(:,:,frames);
 
 %act depending on the method chosen by the user
