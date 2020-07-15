@@ -1,6 +1,6 @@
 # Segmentation
 Image processing for Polymer networks microscopy images (Segmentation, pore properties calculations, 3D rendering,...) in MATLAB.
-The repository was used for the following Vandaele et al. Structural characterization of fibrous hydrogels using fluorescence microscopy. (INSERT LINK)
+The repository was used for the following Vandaele et al. Structural characterization of fibrous hydrogels using fluorescence microscopy. https://doi.org/10.1039/C9SM01828J
 
 # User guide - WorkFlow
 
