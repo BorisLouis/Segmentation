@@ -1,3 +1,11 @@
+%% Simplified bubble analysis
+% This code was taken from the supplementary information of the following
+% paper:
+% Munster & Fabry : A Simplified implementation of the bubble analysis of
+% biopolymer network
+% the paper can be read here : 
+% https://www.cell.com/biophysj/fulltext/S0006-3495(13)00572-9
+
 function [bubble_radii, bubble_coord] = findBubblesSimplified(img)
 % find_bubbles determines the location and radii of 2D or 3D bubbles in
 % the binary image img.

@@ -33,7 +33,7 @@ clear
 close all
 clc
 %% User Input
-threshold = 0.8; %sensitivity for adaptive threshold
+threshold = 0.6; %sensitivity for adaptive threshold
 connectivity = 216; %3D connectivity for binarization (only for adaptive threshold)
 diskDim = 4; %disk dimension to clean segmentation artefact (the bigger the more get cleaned).
 S = 2; % size of gauss filter in pixel
@@ -42,7 +42,7 @@ fileExt = '.tif'; % only work with TIF
 toAnalyze = 'file'; %if folder is chosen the code will search for all the tif
 %inside the folder and segment them with the input provided.
 %if 'file' is input only one file will be segmented.
-memEff = true; % memory efficiency. For large files the code struggle doing
+memEff = false; % memory efficiency. For large files the code struggle doing
 %the segmentation on standard computer, thus we encoded a possibility to
 %process the stack in several steps of dIDX x dIDX (which is a standard format
 %for microscopy camera. The steps results are then put together, this can 

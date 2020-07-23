@@ -11,16 +11,22 @@
 %               equivalent diameter,....
 %      
 
-function [pores3D] = getPoreProps3D(IMScaled)
+function [pores3D] = getPoreProps3D(IMScaled,pxSize)
 %% Performing analysis in 3D
 %The calculation here are the same than the one in 2D but some
 %adaptation was required to perform it in 3D
 %Gaussian filtering
-
+weights = [pxSize.XY,pxSize.XY,pxSize.Z];
 h = waitbar(0,'3D Gaussian filtering...');
-D = bwdist(~IMScaled);
+
+D = DistMap.calcWeightedDistMap(~IMScaled,weights);
 r = 3;
-Ds = imgaussfilt3(D, [r r r]);
+Ds = imgaussfilt3(D, [r r r*pxSize.XY/pxSize.Z]);
+
+%previous code
+% D = bwdist(~IMScaled);
+
+% Ds = imgaussfilt3(D, [r r r]);
 
 %Local maxima and merging
 waitbar(0.2,h,'Getting Local maxima...');
@@ -32,6 +38,8 @@ r=8;
 se = strel('sphere',r);
 LocMax3 = imerode(LocMax2,se);
 LocMax3(~IMScaled) = 0;
+
+
 waitbar(0.4,h,'Performing watershed...');
 imD = -Ds;
 imD(~IMScaled) = Inf;
@@ -41,9 +49,11 @@ ws(~IMScaled) = 0;
 ws = bwareaopen(logical(ws),4);%remove small pores
 ws = bwlabeln(logical(ws));
 %figure, imagesc(ws(:,:,6));
+
+
 h = waitbar(0.6,h,'Getting pore 3D properties...');
 %Calculation of pore properties in 3D:
-stats = regionprops3(ws, 'VoxelIdxList', 'Volume', 'Image', 'Centroid','EquivDiameter', 'BoundingBox'); %ADDED SUSANA
+stats = regionprops3(ws, 'VoxelIdxList', 'Volume', 'Image', 'Centroid', 'BoundingBox','EquivDiameter'); %ADDED SUSANA
 %Memory preallocation
 extRad3D = zeros(size(stats,1),1);
 inRad3D  = zeros(size(stats,1),1);
@@ -56,7 +66,9 @@ IDconn = cell(1,max(ws(:)));
 %individual treatment of the pores
 for i = 1:size(stats,1)
     extRad3D(i) = max(D(stats(i,:).VoxelIdxList{1}));
-    inRad3D(i) = max(max(max(bwdist(~stats(i,:).Image{1}))));
+    edmIm = DistMap.calcWeightedDistMap(~stats(i,:).Image{1},weights);
+    inRad3D(i) = max(edmIm(:));
+   % inRad3D(i) = max(max(max(bwdist(~stats(i,:).Image{1}))));
     vol(i) = stats(i,:).Volume;
     ctr3D(i, :) = stats(i,:).Centroid;
     %Calculate connectivity by expanding the coordinate of a pores
@@ -125,7 +137,6 @@ pores3D.extRad = extRad3D;
 pores3D.inRad = inRad3D;
 pores3D.throats = throats;
 pores3D.connect = NRconn;
-pores3D.diameter = stats.EquivDiameter;
 pores3D.ctr_ext = ctr_ext3D;
 pores3D.connID  = IDconn;
 

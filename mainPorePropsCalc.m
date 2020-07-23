@@ -24,17 +24,19 @@ clc;
 close all;
 
 %% User Input
-pxSizeXY = 180; %in nm
-pxSizeZ = 404;
-dim = '3D';%dimension to perform analysis '2D', '3D' or 'both'
+pxSizeXY = 181; %in nm
+pxSizeZ = 400;
+pxSize.XY = pxSizeXY*10^-3;
+pxSize.Z  = pxSizeZ*10^-3;
+dim = '3D';%dimension to perform analysis: 'bubble', '2D', '3D' or 'both'
 fileExt = '.tif';
 outputName = 'PoreSize-Results';
 data2Use   = 'adapt';%'global' or %'adapt'
 
 %% Loading Data
 % conversion from pixel to area
-pxArea = pxSizeXY*pxSizeXY*1e-6; %in µm^2
-pxVol  = pxSizeXY*pxSizeXY*pxSizeXY*1e-9;%!!Image is rescaled before calculation
+pxArea = pxSize.XY*pxSize.XY; %in µm^2
+pxVol  = pxSize.XY*pxSize.XY*pxSize.Z;%!!Image is rescaled before calculation
 % load folder containing binary file
 [file2Analyze,currentFolderName,outDir] = Load.Folder(fileExt,outputName);
 
@@ -81,10 +83,15 @@ for i = 1:length(idx2Stack)
         IM = Load.Movie.tif.getframes(p2file,frames);
 
         % resizing according to diff in pixel size
-        IMScaled = imresize3(double(IM),[size(IM,1),size(IM,2),round(size(IM,3)*pxSizeZ/pxSizeXY)]);
-        IMScaled = round(IMScaled);
-
-        [pores2D,pores3D] = Calc.getPoreProps(IM,IMScaled,dim);
+        if strcmp(dim,'3D') || strcmp(dim,'both')
+%             IMScaled = imresize3(double(IM),[size(IM,1),size(IM,2),round(size(IM,3)*pxSizeZ/pxSizeXY)]);
+%             IMScaled = round(IMScaled);
+              IMScaled = IM;
+        else
+            IMScaled = IM;
+        end
+        
+        [bubbles,pores2D,pores3D] = Calc.getPoreProps(IM,IMScaled,dim,pxSize);
         if ~isempty(pores2D)
             pores2D.area = pores2D.area*pxArea;
             pores2D.inRad = pores2D.inRad*pxSizeXY*1e-3;%in um
@@ -95,13 +102,13 @@ for i = 1:length(idx2Stack)
         end
         if ~isempty(pores3D)
             pores3D.vol = pores3D.vol*pxVol;
-            pores3D.extRad = pores3D.extRad*pxSizeXY*1e-3;
-            pores3D.inRad = pores3D.inRad*pxSizeXY*1e-3;
-            pores3D.throats = pores3D.throats*pxSizeXY*1e-3;
-            pores3D.diameter = pores3D.diameter*pxSizeXY*1e-3;
-            pores3D.ctr_ext = pores3D.ctr_ext*pxSizeXY*1e-3;
+            pores3D.extRad = pores3D.extRad;
+            pores3D.inRad = pores3D.inRad;
+            pores3D.throats = pores3D.throats;
+            pores3D.ctr_ext = pores3D.ctr_ext.*[pxSize.XY,pxSize.XY,pxSize.Z];
         end
-
+%         bubbles.rad = bubbles.rad*pxSizeXY*1e-3;
+%         bubbles.coord = bubbles.coord*pxSizeXY*1e-3;
         totVol = numel(IM);
         polVolume  = sum(sum(sum(~IM)));%Assume pore are brigth
         disp('Storing Data')
@@ -114,6 +121,7 @@ for i = 1:length(idx2Stack)
         allData(i).totVolume(1)    = totVol;%stillPX
         allData(i).ratioPol(1) = (polVolume)/totVol;
         allData(i).ratioPores(1) = (totVol-polVolume)/totVol;
+        allData(i).bubbles = bubbles;
         
     end
         disp('---------------------NEXT TIF ----------')

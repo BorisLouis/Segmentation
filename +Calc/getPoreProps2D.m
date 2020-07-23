@@ -49,6 +49,9 @@ function [pores2D] = getPoreProps2D(IM)
 %      %   figure, imagesc(ws);
 
         %% calculate data
+        figure(1)
+        imagesc(ws)
+        drawnow;
         %Calculate pore properties in 2D
         stats = regionprops(ws,'PixelIdxList','Area', 'Image', 'Centroid','EquivDiameter', 'BoundingBox'); %ADDED BOUNDINGBOX SUSANA
         %memory preallocation

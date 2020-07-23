@@ -11,7 +11,7 @@
 % area, extRad, inRad, throats,...)
 
 % The code will output a figure with 2 subplot, a CCDF and an Histogram and
-% one with... (ADD SUSANA's CODE)
+% one with violin plot
 
 % Note: The order of the section allow the user to change the property
 % to be plotted without having to load the data again by running the code
@@ -38,7 +38,7 @@ outputName = 'Figures';
 nBins = 100; %for Histogram
 stepSize = 0.25; %for violin distribution
 log = false; %for Violin Plot
-dim   = '3D';
+dim   = '2D';
 prop2Plot = 'inRad'; %'vol'; 'extRad', 'inRad'; 'throat', 'diameter'
 %% Prepare Data to be plotted
 data2Plot = Load.getData2Plot(file2Analyze,dim,prop2Plot);
@@ -51,7 +51,7 @@ for i = 1 : nFile
     allData = [];
     
     for j = 1:size(data2Plot.(currField),1)
-        currData  = data2Plot.(currField).(prop2Plot){j,:};
+        currData  = data2Plot.(currField).(prop2Plot)(j,:);
         [~,CCDF] = Plotting.getCDF(currData(:));
         data2Plot.(currField).CDF{j,1} = [CCDF.x CCDF.y];
         allData = [allData; currData(:)]; 
@@ -76,7 +76,7 @@ for i = 1 : nFile
     %Plot Histogram
     figure('Name',['Figure ',num2str(i)],'Position',[400,250,640,360])
     subplot(1,3,1)
-    histogram(currData.(prop2Plot){1,1},'FaceColor',[0 0 1])
+    histogram(currData.(prop2Plot)(1,:),'FaceColor',[0 0 1])
     box on
     title(['Histogram of ' prop2Plot])
     axis square
@@ -96,8 +96,8 @@ for i = 1 : nFile
     
  
     subplot(1,3,3)
-    x=0:stepSize:max(currData.(prop2Plot){1,1});
-    Plotting.distrib(currData.(prop2Plot){1,1},x,log);
+    x=0:stepSize:max(currData.(prop2Plot)(1,:));
+    Plotting.distrib(currData.(prop2Plot)(1,:),x,log);
     title(['Violin dist of ' prop2Plot]);
     axis square
     xlabel('Sample')

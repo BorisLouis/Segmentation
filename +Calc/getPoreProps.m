@@ -29,7 +29,7 @@
 %           Susana Rocha: https://susanarocha.github.io/                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-function [pores2D,pores3D] = getPoreProps(IM,IMScaled,dim)
+function [bubbles,pores2D,pores3D] = getPoreProps(IM,IMScaled,dim,pxSize)
 %check number of input provided
 switch nargin
     case 1
@@ -37,32 +37,51 @@ switch nargin
     case 2
         dim = 'both';
     case 3
+        
+    case 4
     otherwise
         error('Wrong number of input argument, expect [1 3]');
 end
 % act depending on the dimension requested by the user
+bubble = false;
 switch dim
+    case 'bubble'
+        an2D   = true;
+        bubble = true;
+        an3D   = false;
+        pores3D =[];
     case '2D'
         an2D = true;
         an3D = false;
         pores3D =[];
+        bubbles = [];
     case '3D'
         an2D = false;
         an3D = true;
         pores2D = [];
+        bubbles = [];
     case 'both'
         an2D = true;
         an3D = true;
     otherwise
         error('Please provided the type of analysis you want to perform (2D, 3D or both)');
 end
-
+tic
+if bubble
+    IMs = ~IM;
+    [bubb, coord] = Calc.findBubblesSimplified(IMs);
+    bubbles.rad = bubb;
+    bubbles.coord = coord;
+end
+toc
+tic
 if an2D
     [pores2D] = Calc.getPoreProps2D(IM);
 end
-
+toc
+tic
 if an3D
-    [pores3D] = Calc.getPoreProps3D(IMScaled);
+    [pores3D] = Calc.getPoreProps3D(IMScaled,pxSize);
 end
-
+toc
 
