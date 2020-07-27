@@ -24,8 +24,8 @@ clc;
 close all;
 
 %% User Input
-pxSizeXY = 181; %in nm
-pxSizeZ = 400;
+pxSizeXY = 62; %in nm
+pxSizeZ = 190;
 pxSize.XY = pxSizeXY*10^-3;
 pxSize.Z  = pxSizeZ*10^-3;
 dim = '3D';%dimension to perform analysis: 'bubble', '2D', '3D' or 'both'

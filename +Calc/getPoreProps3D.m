@@ -19,9 +19,9 @@ function [pores3D] = getPoreProps3D(IMScaled,pxSize)
 weights = [pxSize.XY,pxSize.XY,pxSize.Z];
 h = waitbar(0,'3D Gaussian filtering...');
 
-D = DistMap.calcWeightedDistMap(~IMScaled,weights);
+DMap = DistMap.calcWeightedDistMap(~IMScaled,weights);
 r = 3;
-Ds = imgaussfilt3(D, [r r r*pxSize.XY/pxSize.Z]);
+Ds = imgaussfilt3(DMap, [r r r*pxSize.XY/pxSize.Z]);
 
 %previous code
 % D = bwdist(~IMScaled);
@@ -39,17 +39,23 @@ se = strel('sphere',r);
 LocMax3 = imerode(LocMax2,se);
 LocMax3(~IMScaled) = 0;
 
+%release some memory
+clear LocMax LocMax2
 
 waitbar(0.4,h,'Performing watershed...');
 imD = -Ds;
+%clear memory
+clear Ds
+
 imD(~IMScaled) = Inf;
 imD(LocMax3) = min(imD(:));
 ws = watershed(imD);
 ws(~IMScaled) = 0;
 ws = bwareaopen(logical(ws),4);%remove small pores
 ws = bwlabeln(logical(ws));
-%figure, imagesc(ws(:,:,6));
 
+%clear memory
+clear imD LocMax3
 
 h = waitbar(0.6,h,'Getting pore 3D properties...');
 %Calculation of pore properties in 3D:
@@ -65,7 +71,7 @@ IDconn = cell(1,max(ws(:)));
 
 %individual treatment of the pores
 for i = 1:size(stats,1)
-    extRad3D(i) = max(D(stats(i,:).VoxelIdxList{1}));
+    extRad3D(i) = max(DMap(stats(i,:).VoxelIdxList{1}));
     edmIm = DistMap.calcWeightedDistMap(~stats(i,:).Image{1},weights);
     inRad3D(i) = max(edmIm(:));
    % inRad3D(i) = max(max(max(bwdist(~stats(i,:).Image{1}))));
@@ -92,13 +98,13 @@ for i = 1:size(stats,1)
 
     %clean borders
     dilCoord(dilCoord<1) = 1;
-    dilCoord(dilCoord(:,1)>size(IMScaled,1),1) = size(IMScaled,1);
-    dilCoord(dilCoord(:,2)>size(IMScaled,2),2) = size(IMScaled,2);
-    dilCoord(dilCoord(:,3)>size(IMScaled,3),3) = size(IMScaled,3);
+    dilCoord(dilCoord(:,1)>size(DMap,1),1) = size(DMap,1);
+    dilCoord(dilCoord(:,2)>size(DMap,2),2) = size(DMap,2);
+    dilCoord(dilCoord(:,3)>size(DMap,3),3) = size(DMap,3);
     %round for indexing
     dilCoord = round(dilCoord);
     
-    idx = sub2ind(size(IMScaled),dilCoord(:,1),dilCoord(:,2),dilCoord(:,3));
+    idx = sub2ind(size(DMap),dilCoord(:,1),dilCoord(:,2),dilCoord(:,3));
     idx = round(idx);
     %get the connected pores
     conn_pores = ws(idx);
@@ -116,20 +122,21 @@ for i = 1:size(stats,1)
     wy = stats.BoundingBox(i,5);
     wz = stats.BoundingBox(i,6);
     
-    sel_im = D(y:y+wy-1,x:x+wx-1, z:z+wz-1);
+    sel_im = DMap(y:y+wy-1,x:x+wx-1, z:z+wz-1);
     clear ind
     idx=find(sel_im==max(sel_im(:)));
     [ind(:,2),ind(:,1),ind(:,3)] = ind2sub(size(sel_im),idx);
     ctr_ext3D(i,:)=round(stats.BoundingBox(i,1:3))+mean(ind,1)-1;
     
 end
-
+%clear memory
+clear stats x y z wx wy wz IDconn
 %need to fi all of it below
 inRad3D(inRad3D == Inf) = NaN;
 
-ws1 = logical(ws); % used to calculate overlap reagions
-mask_throats = IMScaled-ws1; % mask for the throats
-throats = table2array(regionprops3(logical(mask_throats),D,'MaxIntensity'));
+ws = logical(ws); % used to calculate overlap reagions
+mask_throats = IMScaled-ws; % mask for the throats
+throats = table2array(regionprops3(logical(mask_throats),DMap,'MaxIntensity'));
 
 h = waitbar(0.9,h,'Storing data');
 pores3D.vol = vol;
