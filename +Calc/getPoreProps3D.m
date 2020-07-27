@@ -130,7 +130,7 @@ for i = 1:size(stats,1)
     
 end
 %clear memory
-clear stats x y z wx wy wz IDconn
+clear stats x y z wx wy wz
 %need to fi all of it below
 inRad3D(inRad3D == Inf) = NaN;
 
