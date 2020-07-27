@@ -29,7 +29,7 @@
 %           Susana Rocha: https://susanarocha.github.io/                  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-function [bubbles,pores2D,pores3D] = getPoreProps(IM,IMScaled,dim,pxSize)
+function [bubbles,pores2D,pores3D] = getPoreProps(IM,dim,pxSize)
 %check number of input provided
 switch nargin
     case 1
@@ -66,22 +66,20 @@ switch dim
     otherwise
         error('Please provided the type of analysis you want to perform (2D, 3D or both)');
 end
-tic
+
 if bubble
-    IMs = ~IM;
-    [bubb, coord] = Calc.findBubblesSimplified(IMs);
+    IM = ~IM;
+    [bubb, coord] = Calc.findBubblesSimplified(IM);
     bubbles.rad = bubb;
     bubbles.coord = coord;
 end
-toc
-tic
+
 if an2D
     [pores2D] = Calc.getPoreProps2D(IM);
 end
-toc
-tic
+
 if an3D
-    [pores3D] = Calc.getPoreProps3D(IMScaled,pxSize);
+    [pores3D] = Calc.getPoreProps3D(IM,pxSize);
 end
-toc
+
 

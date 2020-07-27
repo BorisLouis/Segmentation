@@ -82,16 +82,7 @@ for i = 1:length(idx2Stack)
         frames = 1:fileInfo.Frame_n;
         IM = Load.Movie.tif.getframes(p2file,frames);
 
-        % resizing according to diff in pixel size
-        if strcmp(dim,'3D') || strcmp(dim,'both')
-%             IMScaled = imresize3(double(IM),[size(IM,1),size(IM,2),round(size(IM,3)*pxSizeZ/pxSizeXY)]);
-%             IMScaled = round(IMScaled);
-              IMScaled = IM;
-        else
-            IMScaled = IM;
-        end
-        
-        [bubbles,pores2D,pores3D] = Calc.getPoreProps(IM,IMScaled,dim,pxSize);
+        [bubbles,pores2D,pores3D] = Calc.getPoreProps(IM,dim,pxSize);
         if ~isempty(pores2D)
             pores2D.area = pores2D.area*pxArea;
             pores2D.inRad = pores2D.inRad*pxSizeXY*1e-3;%in um

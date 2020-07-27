@@ -11,7 +11,7 @@
 %               equivalent diameter,....
 %      
 
-function [pores3D] = getPoreProps3D(IMScaled,pxSize)
+function [pores3D] = getPoreProps3D(IM,pxSize)
 %% Performing analysis in 3D
 %The calculation here are the same than the one in 2D but some
 %adaptation was required to perform it in 3D
@@ -19,7 +19,7 @@ function [pores3D] = getPoreProps3D(IMScaled,pxSize)
 weights = [pxSize.XY,pxSize.XY,pxSize.Z];
 h = waitbar(0,'3D Gaussian filtering...');
 
-DMap = DistMap.calcWeightedDistMap(~IMScaled,weights);
+DMap = DistMap.calcWeightedDistMap(~IM,weights);
 r = 3;
 Ds = imgaussfilt3(DMap, [r r r*pxSize.XY/pxSize.Z]);
 
@@ -37,7 +37,7 @@ LocMax2 = imdilate(LocMax,se);
 r=8;
 se = strel('sphere',r);
 LocMax3 = imerode(LocMax2,se);
-LocMax3(~IMScaled) = 0;
+LocMax3(~IM) = 0;
 
 %release some memory
 clear LocMax LocMax2
@@ -47,10 +47,10 @@ imD = -Ds;
 %clear memory
 clear Ds
 
-imD(~IMScaled) = Inf;
+imD(~IM) = Inf;
 imD(LocMax3) = min(imD(:));
 ws = watershed(imD);
-ws(~IMScaled) = 0;
+ws(~IM) = 0;
 ws = bwareaopen(logical(ws),4);%remove small pores
 ws = bwlabeln(logical(ws));
 
@@ -135,7 +135,7 @@ clear stats x y z wx wy wz IDconn
 inRad3D(inRad3D == Inf) = NaN;
 
 ws = logical(ws); % used to calculate overlap reagions
-mask_throats = IMScaled-ws; % mask for the throats
+mask_throats = IM-ws; % mask for the throats
 throats = table2array(regionprops3(logical(mask_throats),DMap,'MaxIntensity'));
 
 h = waitbar(0.9,h,'Storing data');
