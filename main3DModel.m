@@ -42,8 +42,8 @@ colorModel = [0.6,0,0];%replace by : 'Z' for zcoloring
 colorPores = [0.4 0.8 0.8];
 
 %Select area to plot
-xRange = [30 196];%px
-yRange = [30 196];%px
+xRange = [1 200];%px
+yRange = [1 200];%px
 
 %more parameter are available and can be checked within the smoothpatch
 %function, the default parameter put in this implementation were satisfying
@@ -136,7 +136,7 @@ else
 end
 %Plot the network with Z coloring or unique color depending on the user
 %input
-figure
+figure(1)
 if zColor
     p = patch('Faces',smoothISurface.faces,'Vertices',smoothISurface.vertices,'FaceVertexCData',color,'FaceColor','interp');
     colormap('jet')
@@ -158,6 +158,29 @@ else
     title('unicolor');
 end
 %% displaying pores in the network
+figure(2)
+if zColor
+    p = patch('Faces',smoothISurface.faces,'Vertices',smoothISurface.vertices,'FaceVertexCData',color,'FaceColor','interp');
+    colormap('jet')
+    p.EdgeColor = 'none';
+    daspect([2 2 1])
+    view(3);
+    axis tight
+    camlight
+    lighting gouraud
+    title('Z-coloring')
+else
+    p2 = patch(smoothISurface);
+    p2.FaceColor = colorModel;
+    p2.EdgeColor = 'none';
+    view(3);
+    axis tight
+    camlight
+    lighting gouraud
+    title('unicolor');
+end
+
+
 if pores
     hold on
     rad=extRad;%(IsInside); %convert rad to pixels

@@ -24,8 +24,8 @@ clc;
 close all;
 
 %% User Input
-pxSizeXY = 62; %in nm
-pxSizeZ = 190;
+pxSizeXY = 180; %in nm
+pxSizeZ = 404;
 pxSize.XY = pxSizeXY*10^-3;
 pxSize.Z  = pxSizeZ*10^-3;
 dim = '3D';%dimension to perform analysis: 'bubble', '2D', '3D' or 'both'
@@ -113,6 +113,8 @@ for i = 1:length(idx2Stack)
         allData(i).ratioPol(1) = (polVolume)/totVol;
         allData(i).ratioPores(1) = (totVol-polVolume)/totVol;
         allData(i).bubbles = bubbles;
+        allData(i).pxSizeXY = pxSizeXY;
+        allData(i).pxSizeY  = pxSizeZ;
         
     end
         disp('---------------------NEXT TIF ----------')

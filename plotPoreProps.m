@@ -38,7 +38,7 @@ outputName = 'Figures';
 nBins = 100; %for Histogram
 stepSize = 0.25; %for violin distribution
 log = false; %for Violin Plot
-dim   = '2D';
+dim   = '3D';
 prop2Plot = 'inRad'; %'vol'; 'extRad', 'inRad'; 'throat', 'diameter'
 %% Prepare Data to be plotted
 data2Plot = Load.getData2Plot(file2Analyze,dim,prop2Plot);

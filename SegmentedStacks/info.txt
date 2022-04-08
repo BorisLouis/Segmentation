@@ -1,7 +1,7 @@
 This file contains information intended for the user of segmentStack.m
  In such a way that the user knows what variable value were used.
 
-Adaptive Threshold sensitivity: 0.5
+Adaptive Threshold sensitivity: 0.6
 Number of frame analyzed: 76/3D Gaussian filtering: S = 2; pixZ  = 2; sigma = [S,S,S/pixZ]
 Three-dimensional connectivity - BWareaopen: 216
 strel disk dimension for imopen: 4
