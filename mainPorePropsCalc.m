@@ -114,7 +114,7 @@ for i = 1:length(idx2Stack)
         allData(i).ratioPores(1) = (totVol-polVolume)/totVol;
         allData(i).bubbles = bubbles;
         allData(i).pxSizeXY = pxSizeXY;
-        allData(i).pxSizeY  = pxSizeZ;
+        allData(i).pxSizeZ  = pxSizeZ;
         
     end
         disp('---------------------NEXT TIF ----------')
