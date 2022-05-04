@@ -109,9 +109,9 @@ function [BW] = adaptiveThresh(imStack,connectivity,threshold,diskDim,neigh)
                
         th = adaptthresh(imStack,threshold,'neigh',neigh,'Fore','bright');
         BW = imbinarize(imStack,th);
-        BW = ~BW;
+        %BW = ~BW;
         BW = bwareaopen(BW,connectivity);
-        SE = strel('disk',diskDim);
-        BW = imopen(BW,SE);
+%         SE = strel('disk',diskDim);
+%         BW = imopen(BW,SE);
         
 end
