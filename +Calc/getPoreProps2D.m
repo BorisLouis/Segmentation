@@ -124,14 +124,14 @@ function [pores2D] = getPoreProps2D(IM)
         throats = struct2array(regionprops(logical(mask_throats),D,'MaxIntensity'));
         
         %save data for each frame
-        all_areas   = [all_areas area];
-        all_inRad   = [all_inRad inRad];
-        all_extRad  = [all_extRad extRad];
-        all_throats =  [all_throats throats];
-        all_connect = [all_connect NRconn]; 
-        all_connectID = {all_connectID IDconn};
-        all_ctr_ext = [all_ctr_ext; ctr_ext];  % added SUSANA
-        diameter = [diameter cell2mat({stats.EquivDiameter})];
+        all_areas   = [all_areas; area(:)];
+        all_inRad   = [all_inRad; inRad(:)];
+        all_extRad  = [all_extRad; extRad(:)];
+        all_throats =  [all_throats; throats(:)];
+        all_connect = [all_connect; NRconn(:)]; 
+        all_connectID = {all_connectID; IDconn(:)};
+        all_ctr_ext = [all_ctr_ext; ctr_ext(:)];  % added SUSANA
+        diameter = [diameter; cell2mat({stats.EquivDiameter})'];
         %solidity = [solidity cell2mat({stats.Solidity})];
         
         waitbar(fr/nFrames, h);
