@@ -18,6 +18,7 @@ function [file2Analyze,currentFolderName,outDir] = Folder(fileExt,output)
 mainFolderName = uigetdir;
 assert(ischar(mainFolderName),'User canceled the selection of file, excecution aborted');
 
+
 %extract the name of the current folder
 idx = strfind(mainFolderName,filesep) ;
 currentFolderName = mainFolderName(idx(end)+1:end) ;

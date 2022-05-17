@@ -1,3 +1,4 @@
+
 clear;
 clc;
 close all;
@@ -62,35 +63,32 @@ for i = 1:length(idx2Stack)
 end
 
 
-%% test skeletonize
-tmp = IM;
-% THIS IS BAD METHOD
-%skel = bwskel(tmp,'MinBranchLength',2);
-%skel = bwmorph(tmp,'skel',inf);.
-
-skel = bwskel(tmp,'MinBranchLength',10);
+%% Skeletonize 
+im2Test = IM(:,:,32);
+skel = bwskel(im2Test,'MinBranchLength',10);
 
 figure
 subplot(1,2,1)
-imagesc(labeloverlay(double(tmp),double(skel),'Transparency',0))
+imagesc(labeloverlay(double(im2Test),double(skel),'Transparency',0))
+axis image
 subplot(1,2,2)
-imagesc(labeloverlay(double(tmp),double(skel),'Transparency',0))
+imagesc(labeloverlay(double(im2Test),double(skel),'Transparency',0))
+axis image
 
 %% Calculate skeleton properties 
-
-
 branchPoints =  bwmorph(skel,'branchpoints');
-%dilate branchpoints
-SE = strel('disk',2);
-dilatedBranchPoints =imdilate(branchPoints,SE);
 
+%dilate branchpoints to provide clearcuts (not ideal for very small fibers)
+SE = strel('square',3);
+dilatedBranchPoints = imdilate(branchPoints,SE);
+
+skelShift = double(skel);
+skelShift(skel==0) = 0.5;
+plotBranches = skelShift-dilatedBranchPoints;
+plotBranches(plotBranches<0) = 0;
 figure
-imagesc(skel-dilatedBranchPoints)
-
-%D = bwdistgeodesic(skel2,find(B),'quasi');
-%for plotting:
-D2 = graydist(skel,find(branchPoints));
-
+imagesc(plotBranches)
+% extract the branches by subtracting the branchpoints
 branches = skel-dilatedBranchPoints;
 branches(branches<0) = 0;
 
@@ -98,71 +96,45 @@ labelSkel = bwlabel(branches);
 figure
 imagesc(labelSkel)
 
-branchLength = regionprops(labelSkel,'Area');
+branchLength = regionprops(labelSkel,'Area','PixelIdxList');
+idx = [branchLength.Area]<3;
+branchLength(idx) = [];
 
-labelledNode = bwlabel(branchPoints);
+labelledNode = bwlabel(dilatedBranchPoints);
 numberOfNodes = max(labelledNode(:));
 
 % connectivity 
-%==> same pore connectivity
+connectivity = zeros(numberOfNodes,1);
+
+SE = strel('square',3);
+for i = 1:numberOfNodes
+    currentNode = labelledNode==i;
+    
+    dilatedNode = imdilate(currentNode,SE);
+    
+    overlap = labelSkel;
+    overlap(~dilatedNode) = 0;
+    
+    %find overlap between fiber and current Node
+    connectivity(i) = length(unique(overlap))-1;
+    
+    
+end
 
 %thickness
+inverse = imcomplement(im2Test);
+distanceMap = bwdist(inverse);
 
-% distMap = bwdist(~IM);
-% ws = watershed(-distMap);
-% ws(~IM) = 0;
-% 
-% figure
-% imagesc(labeloverlay(double(ws),double(branches),'Transparency',0))
+%iterate through branches to get thickness
+thicknessStats = table(cell(length(branchLength),1),zeros(length(branchLength),1),...
+    zeros(length(branchLength),1),'VariableNames',{'Data','Median','Std'});
 
-
-%% test from internet
-inverse = imcomplement(IM);
-ED = edge(IM,'Sobel');
-
-
-BP = bwmorph(skel, 'branchpoints');
-EP = bwmorph(skel, 'endpoints');
-[y,x] = find(EP);
-BP_L = find(BP);
-Dmask = false(size(skel));
-
-%D = bwdistgeodesic(skel);
-% % tic
-% for k = 1:length(x)
-%     D = bwdistgeodesic(skel,x(k),y(k));
-%     distanceToBranchPt = min(D(BP_L));
-%     Dmask(D < distanceToBranchPt) = true;
-% end
-% toc
-
-% finalSkel = skel - Dmask;
-figure(1)
-muxing = ED | inverse;
-imshowpair(muxing,skel,'blend')
-
-%% thickness
-finalIm = muxing+skel;
-
-distance = bwdist(finalIm);
-figure
-imagesc(distance);
-
-
-skel = bwskel(distance,'MinBranchLength',10);
-
-
-%%
-
-
-
-test = double(IM);
-test(test==0) = -inf;
-
-figure
-imagesc(test)
-
-test = test-branches;
-
-figure
-imagesc(~test)
+for i = 1:length(branchLength)
+    currentFiber = branchLength(i).PixelIdxList;
+    
+    thicknessStats.Data{i} = distanceMap(currentFiber);
+    thicknessStats(i,:).Median = median(thicknessStats.Data{i});
+    thicknessStats(i,:).Std = std(thicknessStats.Data{i});
+    
+    
+end
