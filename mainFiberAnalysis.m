@@ -57,84 +57,31 @@ for i = 1:length(idx2Stack)
         % waitbar(j/nImStacks,h,hMessage);
         frames = 1:fileInfo.Frame_n;
         IM = Load.Movie.tif.getframes(p2file,frames);
-        disp('stop')
+        
         
     end
 end
 
+%% Fiber analysis
+switch dim
+    case '2D'
+        [fiberProps2D,skel] = Calc.getFiberProps2D(IM);
+    case '3D'
+        disp('Analysis is not done yet')
+end
 
-%% Skeletonize 
-im2Test = IM(:,:,32);
-skel = bwskel(im2Test,'MinBranchLength',10);
 
-figure
-subplot(1,2,1)
-imagesc(labeloverlay(double(im2Test),double(skel),'Transparency',0))
-axis image
-subplot(1,2,2)
-imagesc(labeloverlay(double(im2Test),double(skel),'Transparency',0))
-axis image
+%% simple plot
+skel2Plot = skel(:,:,1);
+branchPoints =  bwmorph(skel2Plot,'branchpoints');
 
-%% Calculate skeleton properties 
-branchPoints =  bwmorph(skel,'branchpoints');
-
-%dilate branchpoints to provide clearcuts (not ideal for very small fibers)
 SE = strel('square',3);
 dilatedBranchPoints = imdilate(branchPoints,SE);
 
-skelShift = double(skel);
-skelShift(skel==0) = 0.5;
+skelShift = double(skel2Plot);
+skelShift(skel2Plot==0) = 0.5;
 plotBranches = skelShift-dilatedBranchPoints;
 plotBranches(plotBranches<0) = 0;
 figure
 imagesc(plotBranches)
-% extract the branches by subtracting the branchpoints
-branches = skel-dilatedBranchPoints;
-branches(branches<0) = 0;
 
-labelSkel = bwlabel(branches);
-figure
-imagesc(labelSkel)
-
-branchLength = regionprops(labelSkel,'Area','PixelIdxList');
-idx = [branchLength.Area]<3;
-branchLength(idx) = [];
-
-labelledNode = bwlabel(dilatedBranchPoints);
-numberOfNodes = max(labelledNode(:));
-
-% connectivity 
-connectivity = zeros(numberOfNodes,1);
-
-SE = strel('square',3);
-for i = 1:numberOfNodes
-    currentNode = labelledNode==i;
-    
-    dilatedNode = imdilate(currentNode,SE);
-    
-    overlap = labelSkel;
-    overlap(~dilatedNode) = 0;
-    
-    %find overlap between fiber and current Node
-    connectivity(i) = length(unique(overlap))-1;
-    
-    
-end
-
-%thickness
-inverse = imcomplement(im2Test);
-distanceMap = bwdist(inverse);
-
-%iterate through branches to get thickness
-thicknessStats = table(cell(length(branchLength),1),zeros(length(branchLength),1),...
-    zeros(length(branchLength),1),'VariableNames',{'Data','Median','Std'});
-
-for i = 1:length(branchLength)
-    currentFiber = branchLength(i).PixelIdxList;
-    
-    thicknessStats.Data{i} = distanceMap(currentFiber);
-    thicknessStats(i,:).Median = median(thicknessStats.Data{i});
-    thicknessStats(i,:).Std = std(thicknessStats.Data{i});
-    
-    
-end
