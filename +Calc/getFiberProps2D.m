@@ -4,6 +4,8 @@ function [fiber2D,allSkel] = getFiberProps2D(IM)
     fiber2D.numberOfNodes = [];
     fiber2D.numberOfBranches = [];
     fiber2D.thicknessStats = [];
+    fiber2D.branchLength = [];
+    
     allSkel = zeros(size(IM));
     for i = 1:size(IM,3)
         currentIm = IM(:,:,i);
@@ -14,19 +16,11 @@ function [fiber2D,allSkel] = getFiberProps2D(IM)
         SE = strel('square',3);
         dilatedBranchPoints = imdilate(branchPoints,SE);
 
-%         skelShift = double(skel);
-%         skelShift(skel==0) = 0.5;
-%         plotBranches = skelShift-dilatedBranchPoints;
-%         plotBranches(plotBranches<0) = 0;
-%         figure
-%         imagesc(plotBranches)
         % extract the branches by subtracting the branchpoints
         branches = skel-dilatedBranchPoints;
         branches(branches<0) = 0;
 
         labelSkel = bwlabel(branches);
-%         figure
-%         imagesc(labelSkel)
 
         branchLength = regionprops(labelSkel,'Area','PixelIdxList');
         idx = [branchLength.Area]<3;
@@ -69,10 +63,11 @@ function [fiber2D,allSkel] = getFiberProps2D(IM)
 
 
         end
-
+        fiber2D.numberOfBranches = [[fiber2D.numberOfBranches] ;length(branchLength)];
         fiber2D.connectivity = [[fiber2D.connectivity] ;connectivity];
         fiber2D.numberOfNodes = [[fiber2D.numberOfNodes] ;numberOfNodes];
         fiber2D.thicknessStats = [[fiber2D.thicknessStats]; thicknessStats];
+        fiber2D.branchLength    = [[fiber2D.branchLength]; [branchLength.Area]'];
         allSkel(:,:,i) = skel;
     end
 

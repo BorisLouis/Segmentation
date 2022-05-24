@@ -1,4 +1,3 @@
-
 clear;
 clc;
 close all;
@@ -10,7 +9,7 @@ pxSize.XY = pxSizeXY*10^-3;
 pxSize.Z  = pxSizeZ*10^-3;
 dim = '2D';%dimension to perform analysis: 'bubble', '2D', '3D' or 'both'
 fileExt = '.tif';
-outputName = 'PoreSize-Results';
+outputName = 'Fiber-Results';
 data2Use   = 'adapt';%'global' or %'adapt'
 
 %% Loading Data
@@ -84,4 +83,19 @@ plotBranches = skelShift-dilatedBranchPoints;
 plotBranches(plotBranches<0) = 0;
 figure
 imagesc(plotBranches)
+axis image
+colormap('gray')
 
+%% save data
+filename = [outDir filesep 'fiberProps.mat'];
+save(filename,'fiberProps2D')
+
+filename = [outDir filesep 'skeleton.mat'];
+save(filename,'skel')
+
+filename = [outDir filesep 'skeleton.png'];
+figure 
+imagesc(skel(:,:,1))
+axis image
+colormap('gray')
+saveas(gcf,filename,'png')
