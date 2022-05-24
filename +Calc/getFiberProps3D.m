@@ -1,25 +1,19 @@
-function [fiber2D,skel] = getFiberProps3D(IM)
-    error('Work in progress')
-    fiber2D = struct();
-    fiber2D.connectivity = [];
-    fiber2D.numberOfNodes = [];
-    fiber2D.numberOfBranches = [];
-    fiber2D.thicknessStats = [];
+function [fiber3D,skel] = getFiberProps3D(IM)
+    
+    fiber3D = struct();
+    fiber3D.connectivity = [];
+    fiber3D.numberOfNodes = [];
+    fiber3D.numberOfBranches = [];
+    fiber3D.thicknessStats = [];
     allSkel = zeros(size(IM));
    
-    skel = bwskel(currentIm,'MinBranchLength',10);
+    skel = bwskel(IM,'MinBranchLength',10);
     branchPoints =  bwmorph(skel,'branchpoints');
 
     %dilate branchpoints to provide clearcuts (not ideal for very small fibers)
     SE = strel('square',3);
     dilatedBranchPoints = imdilate(branchPoints,SE);
 
-%         skelShift = double(skel);
-%         skelShift(skel==0) = 0.5;
-%         plotBranches = skelShift-dilatedBranchPoints;
-%         plotBranches(plotBranches<0) = 0;
-%         figure
-%         imagesc(plotBranches)
     % extract the branches by subtracting the branchpoints
     branches = skel-dilatedBranchPoints;
     branches(branches<0) = 0;
@@ -70,8 +64,8 @@ function [fiber2D,skel] = getFiberProps3D(IM)
 
     end
 
-    fiber2D.connectivity = [[fiber2D.connectivity] ;connectivity];
-    fiber2D.numberOfNodes = [[fiber2D.numberOfNodes] ;numberOfNodes];
-    fiber2D.thicknessStats = [[fiber2D.thicknessStats]; thicknessStats];
+    fiber3D.connectivity = [[fiber3D.connectivity] ;connectivity];
+    fiber3D.numberOfNodes = [[fiber3D.numberOfNodes] ;numberOfNodes];
+    fiber3D.thicknessStats = [[fiber3D.thicknessStats]; thicknessStats];
 
 end
