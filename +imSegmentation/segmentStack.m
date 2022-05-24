@@ -1,4 +1,4 @@
-function [gSegStack,aSegStack] = segmentStack(imStack,varargin)
+function [gSegStack,aSegStack,iaSegStack] = segmentStack(imStack,varargin)
 % segment a 2D or 3D image.
 %
 % function [gSegStack,aSegStack] = segmentStack(imStack, ...)
@@ -83,9 +83,11 @@ switch method
     case 'both'
         
         [BWglobal] = globThresh(imStack,connectivity,diskDim);
-        [BWadapt]  = adaptiveThresh(imStack,connectivity,threshold,diskDim,neigh);
+        [BWadapt,invBWadapt]  = adaptiveThresh(imStack,connectivity,threshold,diskDim,neigh);
         aSegStack  = BWadapt;
+        iaSegStack = invBWadapt;
         gSegStack  = BWglobal;
+        
     otherwise
         
         error('unknown segmentation method requested, only know "global", "adaptive", "both"');
@@ -105,13 +107,15 @@ function [BW] = globThresh(imStack,connectivity,diskDim)
     
 end
 
-function [BW] = adaptiveThresh(imStack,connectivity,threshold,diskDim,neigh)
+function [BW,invBW] = adaptiveThresh(imStack,connectivity,threshold,diskDim,neigh)
                
         th = adaptthresh(imStack,threshold,'neigh',neigh,'Fore','bright');
         BW = imbinarize(imStack,th);
-        %BW = ~BW;
+        BW = ~BW;
         BW = bwareaopen(BW,connectivity);
-%         SE = strel('disk',diskDim);
-%         BW = imopen(BW,SE);
+        %the inverse BW does not need imopen
+        invBW = ~BW;
+        SE = strel('disk',diskDim);
+        BW = imopen(BW,SE);
         
 end

@@ -54,8 +54,21 @@ outputName  = 'SegmentedStacks';%folder name where output stack will be saved
 switch toAnalyze
     case 'folder'
         %Load folder, and create a folder for data output.
-        [file2Analyze,currentFolderName,outDir] = Load.Folder(fileExt,outputName);
+        [path] = uigetdir();
+        mainFolderContent = dir(path);
+        
+        for i = 3:length(mainFolderContent)%avoid the . and ..
+            currentFolder = [mainFolderContent(i).folder filesep mainFolderContent(i).name];
+          
+            currentFolderContent = dir(currentFolder);
+            index2Images   = contains({currentFolderContent.name},fileExt);
+            file2Analyze(i) = currentFolderContent(index2Images);
+            
+        end
         assert(~isempty(file2Analyze), sprintf('no %s found in the directory', fileExt));
+        
+        idx = or(strcmp('.', {mainFolderContent.name}),strcmp('..', {mainFolderContent.name}));
+        file2Analyze(idx) = [];
     case 'file'
         [fileName, path] = uigetfile('*.tif', 'Select a file to segment');
         file2Analyze.name = fileName;
@@ -68,13 +81,16 @@ switch toAnalyze
 end
 
 %% Processing
-nFiles = size(file2Analyze,1);
+
+nFiles = length(file2Analyze);
 
 for i = 1 : nFiles
 
     disp(['Loading stack --------------' file2Analyze(i).name])
     %getting file info
     path2Stacks = strcat(file2Analyze(i).folder,filesep);
+    outDir = [path2Stacks outputName];
+    mkdir(outDir);
     tmpName = file2Analyze(i).name;
     p2file      = strcat(path2Stacks,tmpName);
     fileInfo    = Load.Movie.tif.getinfo(p2file);
@@ -162,21 +178,27 @@ for i = 1 : nFiles
         close(h);
     else
         %segmentation occurs here if single file was analyzed
-        [BWglobal,BWadapt] = imSegmentation.segmentStack(IMs,'threshold',threshold,...
+        [BWglobal,BWadapt,invBWadapt] = imSegmentation.segmentStack(IMs,'threshold',threshold,...
                 'connectivity',connectivity,'diskDim',diskDim);
             dIDX = imSize(1);
     end
 
     %%%%%%%%%%%%%%% Data saving %%%%%%%%%%%%%%%
     
-    % now we save segmented images
-    disp('Storing global results')
-    tifName = [outDir filesep 'Seg_global_' tmpName];
-    dataStorage.BinaryTiff(tifName,BWglobal);
-
     disp('Storing adaptive results')
     tifName = [outDir filesep 'Seg_adapt_' tmpName];
     dataStorage.BinaryTiff(tifName,BWadapt);
+    
+    
+    disp('Storing adaptive results')
+    tifName = [outDir filesep 'Seg_global_' tmpName];
+    dataStorage.BinaryTiff(tifName,BWglobal);
+    
+    
+     % now we save segmented images
+    disp('Storing global results')
+    tifName = [outDir filesep 'Seg_invAdapt_' tmpName];
+    dataStorage.BinaryTiff(tifName,invBWadapt);
     
     %Save useful information about how the binarization was done
     infoFileName = [outDir filesep 'info.txt'];
