@@ -10,32 +10,49 @@ pxSize.Z  = pxSizeZ*10^-3;
 dim = '2D';%dimension to perform analysis: 'bubble', '2D', '3D' or 'both'
 fileExt = '.tif';
 outputName = 'Fiber-Results';
-data2Use   = 'adapt';%'global' or %'adapt'
+data2Use   = '_invAdapt';%_invAdapt %'_adapt'
 
 %% Loading Data
-% conversion from pixel to area
 pxArea = pxSize.XY*pxSize.XY; %in µm^2
 pxVol  = pxSize.XY*pxSize.XY*pxSize.Z;%!!Image is rescaled before calculation
-% load folder containing binary file
-[file2Analyze,currentFolderName,outDir] = Load.Folder(fileExt,outputName);
 
-idx = contains({file2Analyze.name},data2Use);
-idx2Stack = find(idx);
-nImStacks = length(idx2Stack);
-%preallocate memory
-allData = struct('filename',[],'pores2D',[],'pores3D',[],'polVolume',[],...
-    'poreVolume',[],'totVolume',[],'ratioPol',[],'ratioPores',[]);
-allData(nImStacks).filename = [];
+[path] = uigetdir();
+mainFolderContent = dir(path);
+mainFolderContent(~[mainFolderContent.isdir]) = [];
+for i = 3:length(mainFolderContent)%avoid the . and ..
+    currentFolder = [mainFolderContent(i).folder filesep mainFolderContent(i).name filesep 'SegmentedStacks'];
+
+    currentFolderContent = dir(currentFolder);
+    index2Images   = contains({currentFolderContent.name},fileExt);
+    tmp = currentFolderContent(index2Images);
+    idx = contains({tmp.name},data2Use);
+    file2Analyze(i) = tmp(idx);
+    
+
+end
+assert(~isempty(file2Analyze), sprintf('no %s found in the directory', fileExt));
+idx = or(strcmp('.', {mainFolderContent.name}),strcmp('..', {mainFolderContent.name}));
+file2Analyze(idx) = [];        
+
+%% Looping through the Data
+
 h = waitbar(0);
+
+nImStacks = length(file2Analyze);
+%preallocate memory
+allData = struct('filename',[],'fiber2D',[],'fiber3D',[]);
+allData(nImStacks).filename = [];
+
 %loop through stack
-for i = 1:length(idx2Stack)
-    idx = idx2Stack(i);
+for i = 1:nImStacks
+    
     hMessage = sprintf('Loading image stack number %d/%d',i,nImStacks);
     waitbar(i/nImStacks,h,hMessage);
 
     %Data loading
-    path2Stacks = strcat(file2Analyze(idx).folder,filesep);
-    tmpName = file2Analyze(idx).name;
+    path2Stacks = strcat(file2Analyze(i).folder,filesep);
+    
+    tmpName = file2Analyze(i).name;
     %Check which data to be used
     if isempty(strfind(file2Analyze(i).name,data2Use))
     
@@ -57,17 +74,38 @@ for i = 1:length(idx2Stack)
         frames = 1:fileInfo.Frame_n;
         IM = Load.Movie.tif.getframes(p2file,frames);
         
+        switch dim
+            case '2D'
+                [fiberProps2D,skel] = Calc.getFiberProps2D(IM);
+                fiberProps3D = [];
+            case '3D'
+                error('Analysis is not done yet')
+        end
+        
+        allData(i).filename = file2Analyze(i).name;
+        allData(i).fiber2D = fiberProps2D;
+        allData(i).fiber3D = fiberProps3D;
+        
+        
+        filename = [path2Stacks filesep 'skeleton.mat'];
+        save(filename,'skel')
+
+        filename = [path2Stacks filesep 'skeleton.png'];
+        f = figure; 
+        imagesc(skel(:,:,1))
+        axis image
+        colormap('gray')
+        saveas(gcf,filename,'png')
+        
+        close(f);
+
+        
         
     end
 end
-
-%% Fiber analysis
-switch dim
-    case '2D'
-        [fiberProps2D,skel] = Calc.getFiberProps2D(IM);
-    case '3D'
-        disp('Analysis is not done yet')
-end
+%% save data
+filename = [path filesep 'fiberProps.mat'];
+save(filename,'fiberProps2D')
 
 
 %% simple plot
@@ -86,16 +124,3 @@ imagesc(plotBranches)
 axis image
 colormap('gray')
 
-%% save data
-filename = [outDir filesep 'fiberProps.mat'];
-save(filename,'fiberProps2D')
-
-filename = [outDir filesep 'skeleton.mat'];
-save(filename,'skel')
-
-filename = [outDir filesep 'skeleton.png'];
-figure 
-imagesc(skel(:,:,1))
-axis image
-colormap('gray')
-saveas(gcf,filename,'png')

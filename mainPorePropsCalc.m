@@ -31,36 +31,52 @@ pxSize.Z  = pxSizeZ*10^-3;
 dim = '3D';%dimension to perform analysis: 'bubble', '2D', '3D' or 'both'
 fileExt = '.tif';
 outputName = 'PoreSize-Results';
-data2Use   = 'adapt';%'global' or %'adapt'
+data2Use   = '_adapt';%'_global' or %'_adapt'
 
 %% Loading Data
 % conversion from pixel to area
 pxArea = pxSize.XY*pxSize.XY; %in µm^2
 pxVol  = pxSize.XY*pxSize.XY*pxSize.Z;%!!Image is rescaled before calculation
-% load folder containing binary file
-[file2Analyze,currentFolderName,outDir] = Load.Folder(fileExt,outputName);
+
+[path] = uigetdir();
+mainFolderContent = dir(path);
+mainFolderContent(~[mainFolderContent.isdir]) = [];
+for i = 3:length(mainFolderContent)%avoid the . and ..
+    currentFolder = [mainFolderContent(i).folder filesep mainFolderContent(i).name filesep 'SegmentedStacks'];
+
+    currentFolderContent = dir(currentFolder);
+    index2Images   = contains({currentFolderContent.name},fileExt);
+    tmp = currentFolderContent(index2Images);
+    idx = contains({tmp.name},data2Use);
+    file2Analyze(i) = tmp(idx);
+    
+
+end
+assert(~isempty(file2Analyze), sprintf('no %s found in the directory', fileExt));
+idx = or(strcmp('.', {mainFolderContent.name}),strcmp('..', {mainFolderContent.name}));
+file2Analyze(idx) = [];        
+
 
 %% Looping through the Data
 
 h = waitbar(0);
 
-idx = contains({file2Analyze.name},data2Use);
-idx2Stack = find(idx);
-nImStacks = length(idx2Stack);
+nImStacks = length(file2Analyze);
 %preallocate memory
 allData = struct('filename',[],'pores2D',[],'pores3D',[],'polVolume',[],...
     'poreVolume',[],'totVolume',[],'ratioPol',[],'ratioPores',[]);
 allData(nImStacks).filename = [];
 
 %loop through stack
-for i = 1:length(idx2Stack)
-    idx = idx2Stack(i);
+for i = 1:nImStacks
+    
     hMessage = sprintf('Loading image stack number %d/%d',i,nImStacks);
     waitbar(i/nImStacks,h,hMessage);
 
     %Data loading
-    path2Stacks = strcat(file2Analyze(idx).folder,filesep);
-    tmpName = file2Analyze(idx).name;
+    path2Stacks = strcat(file2Analyze(i).folder,filesep);
+    
+    tmpName = file2Analyze(i).name;
     %Check which data to be used
     if isempty(strfind(file2Analyze(i).name,data2Use))
     
@@ -117,17 +133,19 @@ for i = 1:length(idx2Stack)
         allData(i).pxSizeZ  = pxSizeZ;
         
     end
-        disp('---------------------NEXT TIF ----------')
+    disp('---------------------NEXT TIF ----------')
+        
+        
 end
 close(h);
 
+h = msgbox('The Data were succesfully saved !', 'Success');
 %% saving data
-infoFileName = [outDir filesep 'info.txt'];
+infoFileName = [path filesep 'poreCalcInfo.txt'];
 fid = fopen(infoFileName,'wt');
 fprintf(fid,'This file contains information intended for the user of poreSizeCalc\n');
 fprintf(fid,' In such a way that the user knows what variable value were used.\n\n');
 fprintf(fid,'Pixel size used: %d',pxSizeXY);
 fclose(fid);
 
-save([ outDir filesep data2Use 'PoreProps'],'allData','-v7.3');
-h = msgbox('The Data were succesfully saved !', 'Success');
+save([ path filesep data2Use 'PoreProps'],'allData','-v7.3');

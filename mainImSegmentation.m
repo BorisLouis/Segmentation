@@ -56,7 +56,7 @@ switch toAnalyze
         %Load folder, and create a folder for data output.
         [path] = uigetdir();
         mainFolderContent = dir(path);
-        
+        mainFolderContent(~[mainFolderContent.isdir]) = [];
         for i = 3:length(mainFolderContent)%avoid the . and ..
             currentFolder = [mainFolderContent(i).folder filesep mainFolderContent(i).name];
           
