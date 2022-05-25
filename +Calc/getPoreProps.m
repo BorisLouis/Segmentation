@@ -68,8 +68,8 @@ switch dim
 end
 
 if bubble
-    IM = ~IM;
-    [bubb, coord] = Calc.findBubblesSimplified(IM);
+    %IM = ~IM;
+    [bubb, coord] = Calc.findBubblesSimplified(~IM);
     bubbles.rad = bubb;
     bubbles.coord = coord;
 end

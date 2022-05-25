@@ -33,7 +33,7 @@ clear
 close all
 clc
 %% User Input
-threshold = 0.6; %sensitivity for adaptive threshold
+threshold = 0.8; %sensitivity for adaptive threshold
 connectivity = 216; %3D connectivity for binarization (only for adaptive threshold)
 diskDim = 4; %disk dimension to clean segmentation artefact (the bigger the more get cleaned).
 S = 2; % size of gauss filter in pixel
@@ -92,7 +92,7 @@ for i = 1 : nFiles
 
     %%%%%%%%%%%%%%% Filtering %%%%%%%%%%%%%%%
     disp('Now doing 3D gauss filtering this can take about 3 minutes')
-   
+  
     sigma = [S,S,S/pixZ];
     IMs = imgaussfilt3(IM, sigma);%3D gaussian filtering
     disp('DONE with filtering ------------')
@@ -175,6 +175,13 @@ for i = 1 : nFiles
     dataStorage.BinaryTiff(tifName,BWglobal);
 
     disp('Storing adaptive results')
+    
+    % test imfill
+    warning('Im fill is being used')
+    for j = 1:size(BWadapt,3)
+        BWadapt(:,:,j) = imfill(BWadapt(:,:,j),'holes');
+    end
+    
     tifName = [outDir filesep 'Seg_adapt_' tmpName];
     dataStorage.BinaryTiff(tifName,BWadapt);
     

@@ -28,7 +28,7 @@ pxSizeXY = 180; %in nm
 pxSizeZ = 404;
 pxSize.XY = pxSizeXY*10^-3;
 pxSize.Z  = pxSizeZ*10^-3;
-dim = '2D';%dimension to perform analysis: 'bubble', '2D', '3D' or 'both'
+dim = 'bubble';%dimension to perform analysis: 'bubble', '2D', '3D' or 'both'
 fileExt = '.tif';
 outputName = 'PoreSize-Results';
 data2Use   = 'adapt';%'global' or %'adapt'
@@ -98,8 +98,10 @@ for i = 1:length(idx2Stack)
             pores3D.throats = pores3D.throats;
             pores3D.ctr_ext = pores3D.ctr_ext.*[pxSize.XY,pxSize.XY,pxSize.Z];
         end
-%         bubbles.rad = bubbles.rad*pxSizeXY*1e-3;
+        if ~isempty(bubbles)
+            bubbles.rad = bubbles.rad*pxSizeXY*1e-3;
 %         bubbles.coord = bubbles.coord*pxSizeXY*1e-3;
+        end
         totVol = numel(IM);
         polVolume  = sum(sum(sum(~IM)));%Assume pore are brigth
         disp('Storing Data')
