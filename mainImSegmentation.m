@@ -74,8 +74,6 @@ switch toAnalyze
         file2Analyze.name = fileName;
         file2Analyze.folder = path;
         [~,~,ext] = fileparts(fileName);
-        outDir = [path filesep outputName];
-        status = mkdir(outDir); 
     otherwise
         error('Unknown type to analyze');
 end

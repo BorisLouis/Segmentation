@@ -77,6 +77,11 @@ for i = 1:nImStacks
         switch dim
             case '2D'
                 [fiberProps2D,skel] = Calc.getFiberProps2D(IM);
+                
+                %convert to micrometer
+                fiberProps2D.branchLength = fiberProps2D.branchLength * pxSizeXY;
+                fiberProps2D.thicknessStats.Median = fiberProps2D.thicknessStats.Median * pxSizeXY *2; %convert to diameter
+                fiberProps2D.thicknessStats.Std    = fiberProps2D.thicknessStats.Std*pxSizeXY;
                 fiberProps3D = [];
             case '3D'
                 error('Analysis is not done yet')
