@@ -20,20 +20,32 @@ pxVol  = pxSize.XY*pxSize.XY*pxSize.Z;%!!Image is rescaled before calculation
 mainFolderContent = dir(path);
 mainFolderContent(~[mainFolderContent.isdir]) = [];
 for i = 3:length(mainFolderContent)%avoid the . and ..
-    currentFolder = [mainFolderContent(i).folder filesep mainFolderContent(i).name filesep 'SegmentedStacks'];
-
-    currentFolderContent = dir(currentFolder);
+    if strcmp(mainFolderContent(i).name, 'SegmentedStacks')
+        folder2Binary = [mainFolderContent(i).folder filesep mainFolderContent(i).name];
+        folder2Data   = split([mainFolderContent(i).folder filesep mainFolderContent(i).name],'SegmentedStacks');
+        folder2Data = folder2Data{1};
+    else
+        folder2Data = [mainFolderContent(i).folder filesep mainFolderContent(i).name];
+        folder2Binary = [mainFolderContent(i).folder filesep mainFolderContent(i).name filesep 'SegmentedStacks'];
+    end
+    %get binary
+    currentFolderContent = dir(folder2Binary);
     index2Images   = contains({currentFolderContent.name},fileExt);
     tmp = currentFolderContent(index2Images);
     idx = contains({tmp.name},data2Use);
     file2Analyze(i) = tmp(idx);
-    
+    %get Data
+    dataFolderContent = dir(folder2Data);
+    index2Images   = contains({dataFolderContent.name},fileExt);
+    data2Analyze(i) = dataFolderContent(index2Images);
+   
 
 end
 assert(~isempty(file2Analyze), sprintf('no %s found in the directory', fileExt));
+assert(~isempty(data2Analyze), sprintf('no %s found in the directory', fileExt));
 idx = or(strcmp('.', {mainFolderContent.name}),strcmp('..', {mainFolderContent.name}));
 file2Analyze(idx) = [];        
-
+data2Analyze(idx) = [];
 %% Looping through the Data
 
 h = waitbar(0);
@@ -50,7 +62,7 @@ for i = 1:nImStacks
     waitbar(i/nImStacks,h,hMessage);
 
     %Data loading
-    path2Stacks = strcat(file2Analyze(i).folder,filesep);
+    path2Binary = strcat(file2Analyze(i).folder,filesep);
     
     tmpName = file2Analyze(i).name;
     %Check which data to be used
@@ -58,7 +70,7 @@ for i = 1:nImStacks
     
     else
         
-        p2file      = strcat(path2Stacks,tmpName);
+        p2file      = strcat(path2Binary,tmpName);
         warning('off','all')
         fileInfo    = Load.Movie.tif.getinfo(p2file);
 
@@ -72,16 +84,22 @@ for i = 1:nImStacks
         nIM = tNframes;
         % waitbar(j/nImStacks,h,hMessage);
         frames = 1:fileInfo.Frame_n;
-        IM = Load.Movie.tif.getframes(p2file,frames);
+        binaryData = Load.Movie.tif.getframes(p2file,frames);
         
+        % load Data
+        path2Data = [data2Analyze(i).folder,filesep data2Analyze(i).name]; 
+        fileInfo    = Load.Movie.tif.getinfo(path2Data);
+        frames = 1:fileInfo.Frame_n;
+        data = Load.Movie.tif.getframes(path2Data,frames);
+
         switch dim
             case '2D'
-                [fiberProps2D,skel] = Calc.getFiberProps2D(IM);
+                [fiberProps2D,skel] = Calc.getFiberProps2D(binaryData,data);
                 
                 %convert to micrometer
                 fiberProps2D.branchLength = fiberProps2D.branchLength * pxSizeXY;
-                fiberProps2D.thicknessStats.Median = fiberProps2D.thicknessStats.Median * pxSizeXY *2; %convert to diameter
-                fiberProps2D.thicknessStats.Std    = fiberProps2D.thicknessStats.Std*pxSizeXY;
+                fiberProps2D.thicknessStats = fiberProps2D.thicknessStats* pxSizeXY *2; %convert to diameter
+              
                 fiberProps3D = [];
             case '3D'
                 error('Analysis is not done yet')
@@ -92,10 +110,10 @@ for i = 1:nImStacks
         allData(i).fiber3D = fiberProps3D;
         
         
-        filename = [path2Stacks filesep 'skeleton.mat'];
+        filename = [path2Binary filesep 'skeleton.mat'];
         save(filename,'skel')
 
-        filename = [path2Stacks filesep 'skeleton.png'];
+        filename = [path2Binary filesep 'skeleton.png'];
         f = figure; 
         imagesc(skel(:,:,1))
         axis image

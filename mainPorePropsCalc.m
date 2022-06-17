@@ -42,7 +42,11 @@ pxVol  = pxSize.XY*pxSize.XY*pxSize.Z;%!!Image is rescaled before calculation
 mainFolderContent = dir(path);
 mainFolderContent(~[mainFolderContent.isdir]) = [];
 for i = 3:length(mainFolderContent)%avoid the . and ..
-    currentFolder = [mainFolderContent(i).folder filesep mainFolderContent(i).name filesep 'SegmentedStacks'];
+    if strcmp(mainFolderContent(i).name, 'SegmentedStacks')
+        currentFolder = [mainFolderContent(i).folder filesep mainFolderContent(i).name];
+    else
+        currentFolder = [mainFolderContent(i).folder filesep mainFolderContent(i).name filesep 'SegmentedStacks'];
+    end
 
     currentFolderContent = dir(currentFolder);
     index2Images   = contains({currentFolderContent.name},fileExt);
