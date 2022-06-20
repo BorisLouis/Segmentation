@@ -68,28 +68,33 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
             
             [fiberInd, fiberCoord] = findFiberCenter(currentFiber,fiberImage);
             
-            [idx,xVec,yVec] = getLinePixel(fiberCoord,size(fiberImage),maxDist);
-            figure(1)
-            hold on
-            plot(xVec,yVec,'k','Linewidth',1.5);
-            
-            %get line profile
-            lineData = double(data(idx));
-            
-            %get xAxis
-            xAxis = sqrt((yVec-yVec(1)).^2 + (xVec-xVec(1)).^2);
-            
-%             figure(2)
-%             plot(xAxis,lineData)
-            guess.sig = double(maxDist/2);
-            guess.mu =double( median(xAxis));
-            guess.minMaxDomain = double([xAxis(1) xAxis(end)]);
-            
-           [FitPar,Fit,~]=SimpleFitting.gauss1D(lineData,double(xAxis),guess);
-           
-           
-           thickness1(j) = distanceMap(fiberInd(round(length(currentFiber)/2)));
-           thickness2(j) = FitPar(1);
+            if ~isempty(fiberInd)
+                [idx,xVec,yVec] = getLinePixel(fiberCoord,size(fiberImage),maxDist);
+                figure(1)
+                hold on
+                plot(xVec,yVec,'k','Linewidth',1.5);
+
+                %get line profile
+                lineData = double(data(idx));
+
+                %get xAxis
+                xAxis = sqrt((yVec-yVec(1)).^2 + (xVec-xVec(1)).^2);
+
+    %             figure(2)
+    %             plot(xAxis,lineData)
+                guess.sig = double(maxDist/2);
+                guess.mu =double( median(xAxis));
+                guess.minMaxDomain = double([xAxis(1) xAxis(end)]);
+
+               [FitPar,Fit,~]=SimpleFitting.gauss1D(lineData,double(xAxis),guess);
+
+
+               thickness1(j) = distanceMap(fiberInd(round(length(currentFiber)/2)));
+               thickness2(j) = FitPar(1);
+            else
+               thickness1(j) = NaN;
+               thickness2(j) = NaN;
+            end
 
 
         end
@@ -105,8 +110,7 @@ end
 
 
 function [fiberInd,fiberCoord] = findFiberCenter(currentFiber,fiberImage)
-    disp('test')
-    
+       
     fiberImage(currentFiber) = 1;
     
     
@@ -115,27 +119,34 @@ function [fiberInd,fiberCoord] = findFiberCenter(currentFiber,fiberImage)
     [startLine] = find(endLine);
     [xStartLine,yStartLine] = ind2sub(size(fiberImage),startLine);
     fiber = zeros(length(currentFiber),1);
+    if ~isempty(startLine)
+        for i = 1:length(currentFiber)
+
+                fiber(i) = [startLine(1)] ;
+
+                %find which neighbor pixel is equal to one
+                neighbor = findNeighbor([xStartLine(1) yStartLine(1)],size(fiberImage),1,8);
+
+                idx = sub2ind(size(fiberImage),neighbor(:,1),neighbor(:,2));
+
+                nextPxIdx = and(ismember(idx,currentFiber), ~ismember(idx,fiber));
+                nextPx = idx(nextPxIdx);
+
+                startLine = nextPx;
+                [xStartLine,yStartLine] = ind2sub(size(fiberImage),startLine);
+
+
+        end
     
-    for i = 1:length(currentFiber)
-        fiber(i) = [startLine(1)] ;
-               
-        %find which neighbor pixel is equal to one
-        neighbor = findNeighbor([xStartLine(1) yStartLine(1)],size(fiberImage),1,8);
-        
-        idx = sub2ind(size(fiberImage),neighbor(:,1),neighbor(:,2));
-        
-        nextPxIdx = and(ismember(idx,currentFiber), ~ismember(idx,fiber));
-        nextPx = idx(nextPxIdx);
-        
-        startLine = nextPx;
-        [xStartLine,yStartLine] = ind2sub(size(fiberImage),startLine);
+        [fibRow,fibCol] = ind2sub(size(fiberImage),fiber);
+
+        fiberInd = fiber;
+
+        fiberCoord = [fibRow,fibCol];
+    else
+        fiberInd = [];
+        fiberCoord = [];
     end
-    
-    [fibRow,fibCol] = ind2sub(size(fiberImage),fiber);
-    
-    fiberInd = fiber;
-    
-    fiberCoord = [fibRow,fibCol];  
 
 end
 
