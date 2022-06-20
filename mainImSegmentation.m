@@ -33,8 +33,8 @@ clear
 close all
 clc
 %% User Input
-threshold = 0.8; %sensitivity for adaptive threshold
-connectivity = 216; %3D connectivity for binarization (only for adaptive threshold)
+threshold = 0.4; %sensitivity for adaptive threshold
+connectivity = 512; %3D connectivity for binarization (only for adaptive threshold)
 diskDim = 4; %disk dimension to clean segmentation artefact (the bigger the more get cleaned).
 S = 2; % size of gauss filter in pixel
 pixZ  = 2;% size of pixel in z vs x/y (ratio)

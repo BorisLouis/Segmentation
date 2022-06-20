@@ -36,6 +36,8 @@ mex +rendering3D\vertex_neighbours_double.c -v
 smoothMode = 0; % 0 gives smoother edges, more details in smoothpatch.m
 nIterations = 10; %number of smoothing iterations
 
+pxSizeXY = 140; %in nm
+pxSizeZ = 404; %in nm
 %colors of the plot
 colorModel = [0.6,0,0];%replace by : 'Z' for zcoloring
 colorPores = [0.4 0.8 0.8];
@@ -80,8 +82,8 @@ else
     pores = false;
 end
 
-pxSizeXY = allData.pxSizeXY; %in nm
-pxSizeZ = allData.pxSizeZ; %in nm
+% pxSizeXY = allData.pxSizeXY; %in nm
+% pxSizeZ = allData.pxSizeZ; %in nm
 
 
 %% Preparing data

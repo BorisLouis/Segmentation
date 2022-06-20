@@ -45,31 +45,42 @@ end
 % act depending on the dimension requested by the user
 bubble = false;
 switch dim
+    case 'large'
+        an2D   = false;
+        bubble = false;
+        an3D   = false;
+        pores2D = [];
+        large = true;
     case 'bubble'
         an2D   = true;
         bubble = true;
         an3D   = false;
         pores3D =[];
+        large = false;
     case '2D'
         an2D = true;
         an3D = false;
         pores3D =[];
         bubbles = [];
+        large = false;
     case '3D'
         an2D = false;
         an3D = true;
         pores2D = [];
         bubbles = [];
+        large = false;
     case 'both'
         an2D = true;
         an3D = true;
+        large = false;
+        bubble = false;
     otherwise
         error('Please provided the type of analysis you want to perform (2D, 3D or both)');
 end
 
 if bubble
     %IM = ~IM;
-    [bubb, coord] = Calc.findBubblesSimplified(~IM);
+    [bubb, coord] = Calc.findBubblesSimplified(~IM,pxSize);
     bubbles.rad = bubb;
     bubbles.coord = coord;
 end
@@ -82,4 +93,7 @@ if an3D
     [pores3D] = Calc.getPoreProps3D(IM,pxSize);
 end
 
+if large
+    [pores3D] = Calc.getLargePoreProps3D(IM,pxSize);
+end
 
