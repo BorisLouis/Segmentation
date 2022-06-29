@@ -201,11 +201,11 @@ if iscell(data)
     nn = cellfun(@numel,data);
     % make vector
     data = cat(1,data{:});
-    distributionIdx = repeatEntries((1:nData)',nn);
+    distributionIdx = Plotting.PlotSpread.repeatEntries((1:nData)',nn);
 else
     % distributions in columns
     nData = size(data,2);
-    distributionIdx = repeatEntries((1:nData)',size(data,1));
+    distributionIdx = Plotting.PlotSpread.repeatEntries((1:nData)',size(data,1));
     data = data(:);
 end
 
@@ -456,7 +456,7 @@ for iData = 1:nData
                         spreadWidth = stdWidth*0.9*min(nVal-1,opt.spreadFcn{2})/opt.spreadFcn{2};
                 end
                 spreadDist = spreadWidth / (nVal - 1);
-                if isEven(nVal)
+                if Plotting.PlotSpread.isEven(nVal)
                     offset = spreadDist / 2;
                 else
                     offset = eps;
