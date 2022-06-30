@@ -18,7 +18,7 @@ weight(2) = pxSize.XY;
 weight(3) = pxSize.Z;
 EDM = DistMap.calcWeightedDistMap(img,weight);
 
-smoothed_EDM = imfilter(EDM,fspecial('gaussian',5,1)); % this smoothing
+smoothed_EDM = imfilter(EDM,fspecial('gaussian',10,1)); % this smoothing
 %suppresses bubbles of similar size in close proximity and can be omitted
 local_maxima = imregionalmax(smoothed_EDM); % determines the local maxima,
 %which are the center locations of the bubbles

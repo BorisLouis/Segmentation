@@ -99,7 +99,9 @@ for i = 1:length(idx2Stack)
             pores3D.ctr_ext = pores3D.ctr_ext.*[pxSize.XY,pxSize.XY,pxSize.Z];
         end
         if ~isempty(bubbles)
-            bubbles.rad = bubbles.rad*pxSizeXY*1e-3;
+            %bubble use pixel size as weight in distance map so it output
+            %nm already
+            bubbles.rad = bubbles.rad;
 %         bubbles.coord = bubbles.coord*pxSizeXY*1e-3;
         end
         totVol = numel(IM);
@@ -132,4 +134,19 @@ fprintf(fid,'Pixel size used: %d',pxSizeXY);
 fclose(fid);
 
 save([ outDir filesep data2Use 'PoreProps'],'allData','-v7.3');
+
+catIdx = ones(size(bubbles.rad));
+
+if ~isempty(bubbles)
+    figure
+    Plotting.plotSpread.plotSpread(bubbles.rad,'categoryIdx',catIdx,...
+     'categoryMarkers',{'o'},'categoryColors',{'b'},'xNames',{'Bubble analysis'})
+    axis square
+    box on
+    hold on
+    xvec= 0.2:0.1:1.8;
+    plot(xvec,ones(size(xvec))*nanmedian(bubbles.rad),'-k','LineWidth',2)
+
+    legend({'Data','Median'})
+end 
 h = msgbox('The Data were succesfully saved !', 'Success');

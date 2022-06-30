@@ -52,11 +52,12 @@ switch dim
         pores2D = [];
         large = true;
     case 'bubble'
-        an2D   = true;
+        an2D   = false;
         bubble = true;
         an3D   = false;
         pores3D =[];
         large = false;
+        pores2D = [];
     case '2D'
         an2D = true;
         an3D = false;
