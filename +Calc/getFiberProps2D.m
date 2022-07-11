@@ -5,7 +5,7 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
     fiber2D.numberOfBranches = [];
     fiber2D.thicknessStats = [];
     fiber2D.branchLength = [];
-    
+    fiber2D.straightness = [];
     allSkel = zeros(size(bw));
     for i = 1:size(bw,3)
         currentIm = bw(:,:,i);
@@ -56,11 +56,12 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
         
         fiberImage = zeros(size(currentIm));
         figure(1)
-        imagesc(currentIm);
+        imagesc(bw);
         hold on
         
         thickness1 = zeros(length(branchLength),1);
         thickness2 = thickness1;
+        fiberStraightness = thickness1;
         for j = 1:length(branchLength)
             currentFiber = branchLength(j).PixelIdxList;
 %           
@@ -68,29 +69,43 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
             
             [fiberInd, fiberCoord] = findFiberCenter(currentFiber,fiberImage);
             
+            %get fiber straightness
+            nodeDistance = sqrt((fiberCoord(1,1)-fiberCoord(end,1)).^2+(fiberCoord(1,2)-fiberCoord(end,2)).^2);
+            
+            fiberStraightness(j) = nodeDistance/length(fiberCoord);
+            
             if ~isempty(fiberInd)
                 [idx,xVec,yVec] = getLinePixel(fiberCoord,size(fiberImage),maxDist);
-                figure(1)
-                hold on
-                plot(xVec,yVec,'k','Linewidth',1.5);
+                
+                
+                bwLineData = double(bw(idx));
+                testLine = diff(bwLineData);
+                
+                if sum(abs(testLine))>=2
+                    figure(1)
+                    hold on
+                    plot(xVec,yVec,'k','Linewidth',1.5);
+                    %get line profile
+                    lineData = double(data(idx));
 
-                %get line profile
-                lineData = double(data(idx));
+                    %get xAxis
+                    xAxis = sqrt((yVec-yVec(1)).^2 + (xVec-xVec(1)).^2);
 
-                %get xAxis
-                xAxis = sqrt((yVec-yVec(1)).^2 + (xVec-xVec(1)).^2);
+        %             figure(2)
+        %             plot(xAxis,lineData)
+                    guess.sig = double(maxDist/2);
+                    guess.mu =double( median(xAxis));
+                    guess.minMaxDomain = double([xAxis(1) xAxis(end)]);
 
-    %             figure(2)
-    %             plot(xAxis,lineData)
-                guess.sig = double(maxDist/2);
-                guess.mu =double( median(xAxis));
-                guess.minMaxDomain = double([xAxis(1) xAxis(end)]);
+                   [FitPar,Fit,~]=SimpleFitting.gauss1D(lineData,double(xAxis),guess);
+               
 
-               [FitPar,Fit,~]=SimpleFitting.gauss1D(lineData,double(xAxis),guess);
-
-
-               thickness1(j) = distanceMap(fiberInd(round(length(currentFiber)/2)));
-               thickness2(j) = FitPar(1);
+                    thickness1(j) = distanceMap(fiberInd(round(length(currentFiber)/2)));
+                    thickness2(j) = FitPar(1);
+                else
+                    thickness1(j) = NaN;
+                    thickness2(j) = NaN;
+               end
             else
                thickness1(j) = NaN;
                thickness2(j) = NaN;
@@ -103,6 +118,7 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
         fiber2D.numberOfNodes = [[fiber2D.numberOfNodes] ;numberOfNodes];
         fiber2D.thicknessStats = [[fiber2D.thicknessStats]; thickness1,thickness2;];
         fiber2D.branchLength    = [[fiber2D.branchLength]; [branchLength.Area]'];
+        fiber2D.straightness = [[fiber2D.straightness]; [fiberStraightness]];
         allSkel(:,:,i) = skel;
     end
 
@@ -189,9 +205,14 @@ end
  function [idx,xVec,yVec] = getLinePixel(fiberCoord,dim,vecLength)
     idxCenter = round(length(fiberCoord)/2);
     centerPoint = fiberCoord(round(length(fiberCoord)/2),:);
+    shift = 2;
     
-    x = [fiberCoord(idxCenter+1,2); fiberCoord(idxCenter-1,2)];
-    y = [fiberCoord(idxCenter+1,1); fiberCoord(idxCenter-1,1)];
+    id = [idxCenter - shift idxCenter + shift];
+    id(id<1) = 1;
+    id(id>size(fiberCoord,1)) = size(fiberCoord,1);
+    
+    x = [fiberCoord(id(2),2); fiberCoord(id(1),2)];
+    y = [fiberCoord(id(2),1); fiberCoord(id(1),1)];
 
     center = [mean(x),mean(y)];
     %get the slope of the line
@@ -203,13 +224,13 @@ end
     b = centerPoint(1)-mPerp*centerPoint(2);
     %sort data point base on x axis
     [x,idx] = sort(x);
-        
+    added = 2;
     if abs(mPerp) ~= inf
-        xVec = centerPoint(2)-(ceil(vecLength/2+4)):centerPoint(2)+(ceil(vecLength/2+4));
+        xVec = centerPoint(2)-(ceil(vecLength/2+added)):centerPoint(2)+(ceil(vecLength/2+added));
         yVec = mPerp*xVec+b;
         
     else
-        yVec = centerPoint(1)-(ceil(vecLength/2+4)):centerPoint(1)+(ceil(vecLength/2+4));
+        yVec = centerPoint(1)-(ceil(vecLength/2+added)):centerPoint(1)+(ceil(vecLength/2+added));
         xVec = ones(size(yVec))*x(1);
 
     end

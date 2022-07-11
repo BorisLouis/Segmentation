@@ -94,12 +94,24 @@ for i = 1:nImStacks
 
         switch dim
             case '2D'
+                
+                %test correlation 
+                [corrMat] = normxcorr2(data(:,:,1),data(:,:,1));
+                [a,b] = Calc.radial_profile(corrMat,1);
+                
+                %test fft
+                [dataFFT] = fftshift(fft2(data(:,:,1)));
+                [a1,b1] = Calc.radial_profile(real(dataFFT),1);
+                
                 [fiberProps2D,skel] = Calc.getFiberProps2D(binaryData,data);
                 
                 %convert to micrometer
                 fiberProps2D.branchLength = fiberProps2D.branchLength * pxSizeXY;
                 fiberProps2D.thicknessStats = fiberProps2D.thicknessStats* pxSizeXY *2; %convert to diameter
-              
+                fiberProps2D.corrDecayX = a;
+                fiberProps2D.corrDecayY = b;
+                fiberProps2D.fftX = a1;
+                fiberProps2D.fftY = b1;
                 fiberProps3D = [];
             case '3D'
                 error('Analysis is not done yet')
