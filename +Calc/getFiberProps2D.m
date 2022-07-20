@@ -6,6 +6,7 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
     fiber2D.thicknessStats = [];
     fiber2D.branchLength = [];
     fiber2D.straightness = [];
+    fiber2D.ratio = [];
     allSkel = zeros(size(bw));
     for i = 1:size(bw,3)
         currentIm = bw(:,:,i);
@@ -62,6 +63,10 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
         thickness1 = zeros(length(branchLength),1);
         thickness2 = thickness1;
         fiberStraightness = thickness1;
+        %STOPPPPED HERE
+        fiberRatio1 = thickness1;
+        fiberRatio2 = thickness2;
+        
         for j = 1:length(branchLength)
             currentFiber = branchLength(j).PixelIdxList;
 %           
@@ -69,12 +74,22 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
             
             [fiberInd, fiberCoord] = findFiberCenter(currentFiber,fiberImage);
             
-            %get fiber straightness
-            nodeDistance = sqrt((fiberCoord(1,1)-fiberCoord(end,1)).^2+(fiberCoord(1,2)-fiberCoord(end,2)).^2);
-            
-            fiberStraightness(j) = nodeDistance/length(fiberCoord);
+        
             
             if ~isempty(fiberInd)
+             %get fiber straightness   
+                nodeDistance = sqrt((fiberCoord(1,1)-fiberCoord(end,1)).^2+(fiberCoord(1,2)-fiberCoord(end,2)).^2);
+                pathIntegral = 0;
+                for k =1:length(fiberCoord)-1
+
+                    pathIntegral = pathIntegral + sqrt((fiberCoord(k,1)-fiberCoord(k+1,1)).^2+(fiberCoord(k,2)-fiberCoord(k+1,2)).^2);
+
+                end
+
+
+                fiberStraightness(j) = nodeDistance/pathIntegral;       
+                
+                %fiber thickness
                 [idx,xVec,yVec] = getLinePixel(fiberCoord,size(fiberImage),maxDist);
                 
                 
@@ -102,14 +117,24 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
 
                     thickness1(j) = distanceMap(fiberInd(round(length(currentFiber)/2)));
                     thickness2(j) = FitPar(1);
+                    fiberRatio1(j) = pathIntegral/thickness1(j);
+                    fiberRatio2(j) = pathIntegral/thickness2(j);
+               
                 else
                     thickness1(j) = NaN;
                     thickness2(j) = NaN;
-               end
+                    fiberRatio1(j) = NaN;
+                    fiberRatio2(j) = NaN;
+               
+                end
             else
                thickness1(j) = NaN;
                thickness2(j) = NaN;
+               fiberRatio1(j) = NaN;
+               fiberRatio2(j) = NaN;
+               
             end
+            
 
 
         end
@@ -119,6 +144,9 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
         fiber2D.thicknessStats = [[fiber2D.thicknessStats]; thickness1,thickness2;];
         fiber2D.branchLength    = [[fiber2D.branchLength]; [branchLength.Area]'];
         fiber2D.straightness = [[fiber2D.straightness]; [fiberStraightness]];
+        fiber2D.ratio = [[fiber2D.ratio]; fiberRatio1,fiberRatio2;];
+        
+        
         allSkel(:,:,i) = skel;
     end
 

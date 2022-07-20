@@ -46,10 +46,9 @@ assert(~isempty(data2Analyze), sprintf('no %s found in the directory', fileExt))
 idx = or(strcmp('.', {mainFolderContent.name}),strcmp('..', {mainFolderContent.name}));
 file2Analyze(idx) = [];        
 data2Analyze(idx) = [];
+
 %% Looping through the Data
-
 h = waitbar(0);
-
 nImStacks = length(file2Analyze);
 %preallocate memory
 allData = struct('filename',[],'fiber2D',[],'fiber3D',[]);
@@ -100,8 +99,8 @@ for i = 1:nImStacks
                 [a,b] = Calc.radial_profile(corrMat,1);
                 
                 %test fft
-                [dataFFT] = fftshift(fft2(data(:,:,1)));
-                [a1,b1] = Calc.radial_profile(real(dataFFT),1);
+                [dataFFT] = fftshift(fft2(double(imgaussfilt(data(:,:,1)))));
+                [a1,b1] = Calc.radial_profile(abs(dataFFT),1);
                 
                 [fiberProps2D,skel] = Calc.getFiberProps2D(binaryData,data);
                 
@@ -112,6 +111,7 @@ for i = 1:nImStacks
                 fiberProps2D.corrDecayY = b;
                 fiberProps2D.fftX = a1;
                 fiberProps2D.fftY = b1;
+                fiberProps2D.porosity = 1-sum(binaryData(:))/numel(binaryData(:));
                 fiberProps3D = [];
             case '3D'
                 error('Analysis is not done yet')
