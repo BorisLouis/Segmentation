@@ -104,6 +104,14 @@ for i = 1:nImStacks
                 
                 [fiberProps2D,skel] = Calc.getFiberProps2D(binaryData,data);
                 
+                if max(data(:))<1000
+                    edge = 1:5:max(data(:));
+                    
+                else
+                    edge = 1:65:max(data(:));
+                end
+                [n] = histcounts(data(:),edge);
+                
                 %convert to micrometer
                 fiberProps2D.branchLength = fiberProps2D.branchLength * pxSizeXY;
                 fiberProps2D.thicknessStats = fiberProps2D.thicknessStats* pxSizeXY *2; %convert to diameter
@@ -112,6 +120,8 @@ for i = 1:nImStacks
                 fiberProps2D.fftX = a1;
                 fiberProps2D.fftY = b1;
                 fiberProps2D.porosity = 1-sum(binaryData(:))/numel(binaryData(:));
+                fiberProps2D.Int = edge(1:end-1);
+                fiberProps2D.IntProb = n./sum(n);
                 fiberProps3D = [];
             case '3D'
                 error('Analysis is not done yet')
