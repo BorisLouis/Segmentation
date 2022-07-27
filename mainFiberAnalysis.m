@@ -105,10 +105,10 @@ for i = 1:nImStacks
                 [fiberProps2D,skel] = Calc.getFiberProps2D(binaryData,data);
                 
                 if max(data(:))<1000
-                    edge = 1:5:max(data(:));
+                    edge = 1:1:max(data(:));
                     
                 else
-                    edge = 1:65:max(data(:));
+                    edge = 1:50:max(data(:));
                 end
                 [n] = histcounts(data(:),edge);
                 
@@ -150,7 +150,7 @@ for i = 1:nImStacks
 end
 %% save data
 filename = [path filesep 'fiberProps.mat'];
-save(filename,'fiberProps2D')
+save(filename,'allData')
 
 
 %% simple plot
