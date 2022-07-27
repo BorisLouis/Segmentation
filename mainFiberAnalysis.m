@@ -112,6 +112,9 @@ for i = 1:nImStacks
                 end
                 [n] = histcounts(data(:),edge);
                 
+                fiberIntensity = double(data).*double(binaryData);
+                nFiber = histcounts(nonzeros(fiberIntensity),edge);
+                
                 %convert to micrometer
                 fiberProps2D.branchLength = fiberProps2D.branchLength * pxSizeXY;
                 fiberProps2D.thicknessStats = fiberProps2D.thicknessStats* pxSizeXY *2; %convert to diameter
@@ -122,6 +125,7 @@ for i = 1:nImStacks
                 fiberProps2D.porosity = 1-sum(binaryData(:))/numel(binaryData(:));
                 fiberProps2D.Int = edge(1:end-1);
                 fiberProps2D.IntProb = n./sum(n);
+                fiberProps2D.IntFiber = nFiber./sum(nFiber);
                 fiberProps3D = [];
             case '3D'
                 error('Analysis is not done yet')
@@ -130,7 +134,6 @@ for i = 1:nImStacks
         allData(i).filename = file2Analyze(i).name;
         allData(i).fiber2D = fiberProps2D;
         allData(i).fiber3D = fiberProps3D;
-        
         
         filename = [path2Binary filesep 'skeleton.mat'];
         save(filename,'skel')

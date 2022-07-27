@@ -57,7 +57,8 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
         
         fiberImage = zeros(size(currentIm));
         figure(1)
-        imagesc(bw);
+        imagesc(skel);
+        axis image
         hold on
         
         thickness1 = zeros(length(branchLength),1);
@@ -90,7 +91,7 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
                 fiberStraightness(j) = nodeDistance/pathIntegral;       
                 
                 %fiber thickness
-                [idx,xVec,yVec] = getLinePixel(fiberCoord,size(fiberImage),maxDist);
+                [idx,xVec,yVec] = getLinePixel(fiberCoord,size(fiberImage),maxDist*sqrt(2));
                 
                 
                 bwLineData = double(bw(idx));
@@ -105,18 +106,20 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
 
                     %get xAxis
                     xAxis = sqrt((yVec-yVec(1)).^2 + (xVec-xVec(1)).^2);
-
-        %             figure(2)
-        %             plot(xAxis,lineData)
+                    
                     guess.sig = double(maxDist/2);
                     guess.mu =double( median(xAxis));
                     guess.minMaxDomain = double([xAxis(1) xAxis(end)]);
 
                    [FitPar,Fit,~]=SimpleFitting.gauss1D(lineData,double(xAxis),guess);
                
-
+                    
                     thickness1(j) = distanceMap(fiberInd(round(length(currentFiber)/2)));
                     thickness2(j) = FitPar(1);
+                    if thickness2(j) > thickness1(j)
+                        disp('stop')
+                    end
+                    
                     fiberRatio1(j) = pathIntegral/thickness1(j);
                     fiberRatio2(j) = pathIntegral/thickness2(j);
                
