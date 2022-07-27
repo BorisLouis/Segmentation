@@ -101,22 +101,22 @@ ylabel(['Probability'])
 title('Intensity distribution')
 
 %%  Intensity Fiber Plot
-% fields = fieldnames(avgData2Plot);
-% 
-% figure
-% hold on
-% for i = 1:length(fields)
-%    currentDataX = avgData2Plot.(fields{i}).Int;
-%    currentDataY =  avgData2Plot.(fields{i}).IntFiber;
-%    
-%    plot(currentDataX,currentDataY)
-%     
-% end
-% axis square
-% box on
-% legend(fields)
-% xlabel(['Intensity(a.u.)'])
-% ylabel(['Probability'])
+fields = fieldnames(avgData2Plot);
+
+figure
+hold on
+for i = 1:length(fields)
+   currentDataX = avgData2Plot.(fields{i}).Int;
+   currentDataY =  avgData2Plot.(fields{i}).IntFiber;
+   
+   plot(currentDataX,currentDataY)
+    
+end
+axis square
+box on
+legend(fields)
+xlabel(['Intensity(a.u.)'])
+ylabel(['Probability'])
 title('Segmented Intensity distribution')
 %% Number of Nodes
 pts ={};
@@ -169,6 +169,12 @@ box on
 xlabel('Cold Hot Cold')
 ylabel('Thickness - distmap')
 title('Thickness - distmap')
+
+%for Johannes to try log scale
+%set(gca,'YScale','log')
+
+
+
 %% Thickness from line profile
 pts ={};
 catIdx = [];
