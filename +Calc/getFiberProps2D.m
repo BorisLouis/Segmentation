@@ -8,6 +8,8 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
     fiber2D.straightness = [];
     fiber2D.ratio = [];
     allSkel = zeros(size(bw));
+    
+    data = imgaussfilt(data);
     for i = 1:size(bw,3)
         currentIm = bw(:,:,i);
         skel = bwskel(currentIm,'MinBranchLength',10);
@@ -57,42 +59,35 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
         
         fiberImage = zeros(size(currentIm));
         figure(1)
-        imagesc(skel);
+        imagesc(imfuse(data,skel));
         axis image
         hold on
         
         thickness1 = zeros(length(branchLength),1);
         thickness2 = thickness1;
         fiberStraightness = thickness1;
-        %STOPPPPED HERE
+       
         fiberRatio1 = thickness1;
         fiberRatio2 = thickness2;
         
         for j = 1:length(branchLength)
             currentFiber = branchLength(j).PixelIdxList;
-%           
-            maxDist = max(distanceMap(currentFiber));
-            
             [fiberInd, fiberCoord] = findFiberCenter(currentFiber,fiberImage);
-            
-        
-            
+            maxDist = distanceMap(fiberInd(round(length(currentFiber)/2)));
             if ~isempty(fiberInd)
              %get fiber straightness   
                 nodeDistance = sqrt((fiberCoord(1,1)-fiberCoord(end,1)).^2+(fiberCoord(1,2)-fiberCoord(end,2)).^2);
                 pathIntegral = 0;
-                for k =1:length(fiberCoord)-1
+                for k = 1:length(fiberCoord)-1
 
                     pathIntegral = pathIntegral + sqrt((fiberCoord(k,1)-fiberCoord(k+1,1)).^2+(fiberCoord(k,2)-fiberCoord(k+1,2)).^2);
 
                 end
 
-
                 fiberStraightness(j) = nodeDistance/pathIntegral;       
                 
                 %fiber thickness
-                [idx,xVec,yVec] = getLinePixel(fiberCoord,size(fiberImage),maxDist*sqrt(2));
-                
+                [idx,xVec,yVec] = getLinePixel(fiberCoord,size(fiberImage),maxDist);
                 
                 bwLineData = double(bw(idx));
                 testLine = diff(bwLineData);
@@ -100,26 +95,23 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
                 if sum(abs(testLine))>=2
                     figure(1)
                     hold on
-                    plot(xVec,yVec,'k','Linewidth',1.5);
+                    plot(xVec,yVec,'w','Linewidth',1.5);
                     %get line profile
                     lineData = double(data(idx));
 
                     %get xAxis
                     xAxis = sqrt((yVec-yVec(1)).^2 + (xVec-xVec(1)).^2);
                     
-                    guess.sig = double(maxDist/2);
+                    guess.sig = double(maxDist);
                     guess.mu =double( median(xAxis));
                     guess.minMaxDomain = double([xAxis(1) xAxis(end)]);
 
                    [FitPar,Fit,~]=SimpleFitting.gauss1D(lineData,double(xAxis),guess);
-               
-                    
+
                     thickness1(j) = distanceMap(fiberInd(round(length(currentFiber)/2)));
                     thickness2(j) = FitPar(1);
-                    if thickness2(j) > thickness1(j)
-                        disp('stop')
-                    end
-                    
+                 
+
                     fiberRatio1(j) = pathIntegral/thickness1(j);
                     fiberRatio2(j) = pathIntegral/thickness2(j);
                
@@ -255,21 +247,30 @@ end
     b = centerPoint(1)-mPerp*centerPoint(2);
     %sort data point base on x axis
     [x,idx] = sort(x);
-    added = 2;
-    if abs(mPerp) ~= inf
-        xVec = centerPoint(2)-(ceil(vecLength/2+added)):centerPoint(2)+(ceil(vecLength/2+added));
-        yVec = mPerp*xVec+b;
-        
-    else
+    added = 4;
+    
+    
+    if abs(mPerp) == inf
         yVec = centerPoint(1)-(ceil(vecLength/2+added)):centerPoint(1)+(ceil(vecLength/2+added));
         xVec = ones(size(yVec))*x(1);
+    
+    elseif abs(mPerp) <= 1
+        xVec = centerPoint(2)-(ceil(vecLength+added)):centerPoint(2)+(ceil(vecLength+added));
+        yVec = mPerp*xVec+b;   
+        
+    else
+        yVec = centerPoint(1)-(ceil(vecLength+added)):centerPoint(1)+(ceil(vecLength+added));
+        xVec = (yVec-b)/mPerp;
 
     end
 
     xVec = round(xVec);
     yVec = round(yVec);
-
+       
+    totalLength = (vecLength+added)*2;
+    
     [xVec,yVec] = fixVec(xVec,yVec,dim);
+ 
     %get the index of the pixel in the image coordinates
     idx = sub2ind(dim,yVec,xVec);
 
