@@ -135,6 +135,7 @@ box on
 xlabel('Cold Hot Cold')
 ylabel('Number of Nodes')
 title('Number of Nodes')
+
 %% Number of branch
 pts ={};
 catIdx = [];
@@ -174,6 +175,22 @@ title('Thickness - distmap')
 %set(gca,'YScale','log')
 
 
+   
+figure 
+Plotting.distributionPlot(data,'histOpt',0, 'showMM',0);
+pp=findobj(gca, 'type', 'patch');
+set(pp(1), 'FaceColor', [0 0 1]);  
+set(pp(2), 'FaceColor', [1 0 0]);
+set(pp(3), 'FaceColor', [0 0 0.7]);
+hold on
+title('Violin dist of Thickness');
+axis square
+box on
+xlabel('Sample')
+%ylabel([prop2Plot,' (µm)'])
+set(gcf, 'color', 'w')
+set(gca, 'XTick', 1, 'XTickLabel', {'Cold','Hot','Cold'});
+
 
 %% Thickness from line profile
 pts ={};
@@ -192,6 +209,23 @@ box on
 xlabel('Cold Hot Cold')
 ylabel('Thickness - line prof.')
 title('Thickness - line prof.')
+
+figure 
+Plotting.distributionPlot(data,'histOpt',0, 'showMM',0);
+pp=findobj(gca, 'type', 'patch');
+set(pp(1), 'FaceColor', [0 0 1]);  
+set(pp(2), 'FaceColor', [1 0 0]);
+set(pp(3), 'FaceColor', [0 0 0.7]);
+hold on
+title('Violin dist of Thickness from line Prof');
+axis square
+box on
+xlabel('Sample')
+%ylabel([prop2Plot,' (µm)'])
+set(gcf, 'color', 'w')
+set(gca, 'XTick', 1, 'XTickLabel', {'Cold','Hot','Cold'});
+
+
 %% branch length
  pts ={};
 catIdx = [];
@@ -209,6 +243,21 @@ box on
 xlabel('Cold Hot Cold')
 ylabel('Branch length(nm)')
 title('Branch length(nm)')
+
+figure 
+Plotting.distributionPlot(data,'histOpt',0, 'showMM',0);
+pp=findobj(gca, 'type', 'patch');
+set(pp(1), 'FaceColor', [0 0 1]);  
+set(pp(2), 'FaceColor', [1 0 0]);
+set(pp(3), 'FaceColor', [0 0 0.7]);
+hold on
+title('Violin dist of branch length');
+axis square
+box on
+xlabel('Sample')
+%ylabel([prop2Plot,' (µm)'])
+set(gcf, 'color', 'w')
+set(gca, 'XTick', 1, 'XTickLabel', {'Cold','Hot','Cold'});
 %% straightness
 pts ={};
 catIdx = [];
@@ -226,6 +275,22 @@ box on
 xlabel('Cold Hot Cold')
 ylabel('Straightness')
 title('Straightness')
+
+figure 
+Plotting.distributionPlot(data,'histOpt',0, 'showMM',0);
+pp=findobj(gca, 'type', 'patch');
+set(pp(1), 'FaceColor', [0 0 1]);  
+set(pp(2), 'FaceColor', [1 0 0]);
+set(pp(3), 'FaceColor', [0 0 0.7]);
+hold on
+title('Violin dist of straightness');
+axis square
+box on
+xlabel('Sample')
+%ylabel([prop2Plot,' (µm)'])
+set(gcf, 'color', 'w')
+set(gca, 'XTick', 1, 'XTickLabel', {'Cold','Hot','Cold'});
+
 %% ratio from distMap
  pts ={};
 catIdx = [];
@@ -243,6 +308,21 @@ box on
 xlabel('Cold Hot Cold')
 ylabel('Length to thickness ratio - distmap')
 title('Length to thickness ratio - distmap')
+
+figure 
+Plotting.distributionPlot(data,'histOpt',0, 'showMM',0);
+pp=findobj(gca, 'type', 'patch');
+set(pp(1), 'FaceColor', [0 0 1]);  
+set(pp(2), 'FaceColor', [1 0 0]);
+set(pp(3), 'FaceColor', [0 0 0.7]);
+hold on
+title('Violin dist of length to thickness ratio');
+axis square
+box on
+xlabel('Sample')
+%ylabel([prop2Plot,' (µm)'])
+set(gcf, 'color', 'w')
+set(gca, 'XTick', 1, 'XTickLabel', {'Cold','Hot','Cold'});
 %% ratio from line profile
  pts ={};
 catIdx = [];
@@ -260,6 +340,21 @@ box on
 xlabel('Cold Hot Cold')
 ylabel('Length to thickness ratio - line prof.')
 title('Length to thickness ratio - line prof.')
+
+figure 
+Plotting.distributionPlot(data,'histOpt',0, 'showMM',0);
+pp=findobj(gca, 'type', 'patch');
+set(pp(1), 'FaceColor', [0 0 1]);  
+set(pp(2), 'FaceColor', [1 0 0]);
+set(pp(3), 'FaceColor', [0 0 0.7]);
+hold on
+title('Violin dist of length to thickness ratio line prof');
+axis square
+box on
+xlabel('Sample')
+%ylabel([prop2Plot,' (µm)'])
+set(gcf, 'color', 'w')
+set(gca, 'XTick', 1, 'XTickLabel', {'Cold','Hot','Cold'});
 %% Porosity
  pts ={};
 catIdx = [];
