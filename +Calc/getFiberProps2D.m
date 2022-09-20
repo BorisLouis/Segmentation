@@ -73,8 +73,9 @@ function [fiber2D,allSkel] = getFiberProps2D(bw,data)
         for j = 1:length(branchLength)
             currentFiber = branchLength(j).PixelIdxList;
             [fiberInd, fiberCoord] = findFiberCenter(currentFiber,fiberImage);
-            maxDist = distanceMap(fiberInd(round(length(currentFiber)/2)));
+            
             if ~isempty(fiberInd)
+                maxDist = distanceMap(fiberInd(round(length(currentFiber)/2)));
              %get fiber straightness   
                 nodeDistance = sqrt((fiberCoord(1,1)-fiberCoord(end,1)).^2+(fiberCoord(1,2)-fiberCoord(end,2)).^2);
                 pathIntegral = 0;
