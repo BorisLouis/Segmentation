@@ -9,10 +9,9 @@ authors:
     given-names: "Boris"
 repository-code: "https://github.com/BorisLouis/Segmentation"
 
-# Uncomment and fill these when available:
-# version: "1.0.0"
-# date-released: "YYYY-MM-DD"
-# doi: "YOUR ZENODO DOI"
+version: "1.0.2"
+date-released: "2026-09-12"
+doi: "https://doi.org/10.5281/zenodo.22729885"
 
 references:
   - type: article
