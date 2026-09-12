@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite both the repository
+  using its Zenodo DOI and the associated paper listed below.
+type: software
+title: "Segmentation"
+authors:
+  - family-names: "Louis"
+    given-names: "Boris"
+repository-code: "https://github.com/BorisLouis/Segmentation"
+
+# Uncomment and fill these when available:
+# version: "1.0.0"
+# date-released: "YYYY-MM-DD"
+# doi: "YOUR ZENODO DOI"
+
+references:
+  - type: article
+    title: >-
+      Structural characterization of fibrous synthetic
+      hydrogels using fluorescence microscopy
+    authors:
+      - family-names: "Vandaele"
+        given-names: "Johannes"
+      - family-names: "Louis"
+        given-names: "Boris"
+      - family-names: "Liu"
+        given-names: "Kaizheng"
+      - family-names: "Camacho"
+        given-names: "Rafael"
+      - family-names: "Kouwer"
+        given-names: "Paul H. J."
+      - family-names: "Rocha"
+        given-names: "Susana"
+    journal: "Soft Matter"
+    volume: "16"
+    issue: "17"
+    start: "4210"
+    end: "4219"
+    year: 2020
+    doi: "10.1039/C9SM01828J"
